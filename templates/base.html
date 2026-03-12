@@ -3,30 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django Project{% endblock %}</title>
+    <title>{% block title %}Software{% endblock %}</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; }
-        nav { margin-bottom: 20px; }
-        nav a { margin-right: 15px; }
-        .error { color: red; }
+        body {
+            font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+            background-color: #fdfdfd;
+            color: #111;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        header {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        nav {
+            margin-top: 10px;
+        }
+        nav a, nav span, nav button {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #005577;
+            font-weight: bold;
+        }
+        nav a:hover {
+            background-color: #eee;
+        }
+        button {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            color: #005577;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #eee;
+        }
+        main {
+            padding: 10px 0;
+        }
+        h1, h2, h3 {
+            color: #333;
+            font-weight: normal;
+            border-bottom: 1px solid #eee;
+        }
+        form p {
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="password"], input[type="email"] {
+            border: 1px solid #ccc;
+            padding: 4px;
+            font-family: inherit;
+        }
+        input:focus {
+            outline: 1px solid #005577;
+        }
+        .error {
+            color: #aa0000;
+            font-weight: bold;
+        }
+        .btn-danger {
+            color: #aa0000 !important;
+        }
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="{% url 'landing' %}">Home</a>
-        {% if user.is_authenticated %}
-            <span>Welcome, {{ user.username }}!</span>
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'signup' %}">Sign Up</a>
-        {% endif %}
-    </nav>
+    <header>
+        <strong>PROJECT_NAME</strong>
+        <nav>
+            <a href="{% url 'landing' %}">home</a>
+            {% if user.is_authenticated %}
+                <span>user: {{ user.username }}</span>
+                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">login</a>
+                <a href="{% url 'signup' %}">signup</a>
+            {% endif %}
+        </nav>
+    </header>
     <main>
         {% block content %}{% endblock %}
     </main>
+    <footer>
+        <p>&copy; 2026 MAT132 - Bilgisayar Programlama II</p>
+    </footer>
 </body>
 </html>

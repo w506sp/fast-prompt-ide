@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Delete Account{% endblock %}
+{% block title %}remove account{% endblock %}
 
 {% block content %}
-    <h1>Delete Account</h1>
-    <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+    <h1>remove account</h1>
+    <p>this will delete your account permanently. proceed?</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" style="color: red;">Yes, Delete my account</button>
-        <a href="{% url 'landing' %}">Cancel</a>
+        <button type="submit" class="btn-danger">yes, delete account</button>
+        <a href="{% url 'landing' %}">cancel</a>
     </form>
 {% endblock %}
