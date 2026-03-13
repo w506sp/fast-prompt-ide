@@ -3,33 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Software{% endblock %}</title>
+    <title>{% block title %}fast-prompt-ide{% endblock %}</title>
     <style>
         body {
             font-family: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
             background-color: #fdfdfd;
             color: #111;
             line-height: 1.5;
-            max-width: 800px;
+            max-width: 900px;
             margin: 40px auto;
             padding: 0 20px;
         }
         header {
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            margin-bottom: 30px;
             padding-bottom: 10px;
+        }
+        .brand {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-transform: lowercase;
+            letter-spacing: -1px;
         }
         nav {
             margin-top: 10px;
         }
         nav a, nav span, nav button {
-            margin-right: 15px;
+            margin-right: 20px;
             text-decoration: none;
             color: #005577;
             font-weight: bold;
         }
         nav a:hover {
-            background-color: #eee;
+            background-color: #f0f0f0;
+            text-decoration: underline;
         }
         button {
             background: none;
@@ -41,50 +48,64 @@
             font-weight: bold;
         }
         button:hover {
-            background-color: #eee;
+            text-decoration: underline;
         }
         main {
             padding: 10px 0;
         }
         h1, h2, h3 {
-            color: #333;
-            font-weight: normal;
-            border-bottom: 1px solid #eee;
+            color: #000;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            margin-top: 30px;
         }
-        form p {
-            margin-bottom: 10px;
-        }
-        input[type="text"], input[type="password"], input[type="email"] {
-            border: 1px solid #ccc;
-            padding: 4px;
+        p { margin: 15px 0; }
+        form p { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="password"], input[type="email"], textarea {
+            border: 1px solid #999;
+            padding: 6px;
             font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
         }
-        input:focus {
-            outline: 1px solid #005577;
+        input:focus, textarea:focus {
+            outline: 2px solid #005577;
+            border-color: #005577;
         }
         .error {
             color: #aa0000;
             font-weight: bold;
+            margin: 10px 0;
         }
         .btn-danger {
             color: #aa0000 !important;
         }
         footer {
-            margin-top: 40px;
+            margin-top: 60px;
             border-top: 1px solid #ccc;
-            padding-top: 10px;
-            font-size: 0.9em;
-            color: #666;
+            padding-top: 20px;
+            font-size: 0.85em;
+            color: #555;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: block;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <header>
-        <strong>PROJECT_NAME</strong>
+        <div class="brand">fast-prompt-ide</div>
         <nav>
-            <a href="{% url 'landing' %}">home</a>
+            <a href="{% url 'landing' %}">dashboard</a>
             {% if user.is_authenticated %}
-                <span>user: {{ user.username }}</span>
+                <span>user:{{ user.username }}</span>
                 <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit">logout</button>
@@ -99,7 +120,10 @@
         {% block content %}{% endblock %}
     </main>
     <footer>
-        <p>&copy; 2026 MAT132 - Bilgisayar Programlama II</p>
+        <p>
+            <strong>fast-prompt-ide</strong> - minimalist local llm management<br>
+            &copy; 2026 MAT132 - Bilgisayar Programlama II
+        </p>
     </footer>
 </body>
 </html>

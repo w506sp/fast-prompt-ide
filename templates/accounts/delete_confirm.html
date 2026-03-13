@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}remove account{% endblock %}
+{% block title %}terminate account - fast-prompt-ide{% endblock %}
 
 {% block content %}
-    <h1>remove account</h1>
-    <p>this will delete your account permanently. proceed?</p>
+    <h1>terminate developer account</h1>
+    <p class="error">warning: this action will permanently remove your user profile and all associated data from the fast-prompt-ide database.</p>
+    <p>are you sure you want to proceed?</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn-danger">yes, delete account</button>
+        <div class="code-block">
+            $ account_delete --confirm<br>
+            > awaiting user confirmation...
+        </div>
+        <button type="submit" class="btn-danger">confirm termination</button>
         <a href="{% url 'landing' %}">cancel</a>
     </form>
 {% endblock %}

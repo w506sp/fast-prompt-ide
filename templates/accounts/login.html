@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}login{% endblock %}
+{% block title %}login - fast-prompt-ide{% endblock %}
 
 {% block content %}
-    <h1>login</h1>
+    <h1>authenticate</h1>
+    <p>please provide your developer credentials.</p>
     {% if form.errors %}
-        <p class="error">access denied.</p>
+        <p class="error">error: invalid credentials. check your username and password.</p>
     {% endif %}
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">authenticate</button>
+        <div class="code-block">
+            {{ form.as_p }}
+        </div>
+        <button type="submit">access dashboard</button>
     </form>
-    <p>no account? <a href="{% url 'signup' %}">signup</a></p>
+    <p>missing an account? <a href="{% url 'signup' %}">signup</a> to get started.</p>
 {% endblock %}

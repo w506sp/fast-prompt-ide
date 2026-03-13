@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}signup{% endblock %}
+{% block title %}signup - fast-prompt-ide{% endblock %}
 
 {% block content %}
     <h1>signup</h1>
+    <p>create a developer account to start managing your local llm prompts.</p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">create account</button>
+        <div class="code-block">
+            {{ form.as_p }}
+        </div>
+        <button type="submit">create developer profile</button>
     </form>
-    <p>existing user? <a href="{% url 'login' %}">login</a></p>
+    <p>already registered? <a href="{% url 'login' %}">authenticate here</a>.</p>
 {% endblock %}
