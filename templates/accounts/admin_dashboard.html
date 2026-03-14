@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}admin tools - fast-prompt-ide{% endblock %}
+
+{% block content %}
+    <h1>admin: user management</h1>
+    <p>supervising all registered accounts.</p>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="border-bottom: 1px solid #000; text-align: left;">
+                <th style="padding: 10px;">id</th>
+                <th style="padding: 10px;">username</th>
+                <th style="padding: 10px;">superuser</th>
+                <th style="padding: 10px;">actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">{{ u.id }}</td>
+                <td style="padding: 10px;">{{ u.username }}</td>
+                <td style="padding: 10px;">{% if u.is_superuser %}yes{% else %}no{% endif %}</td>
+                <td style="padding: 10px;">
+                    {% if u.id != user.id %}
+                        <a href="{% url 'admin_delete_user' u.id %}" class="btn-danger">delete</a>
+                    {% else %}
+                        <span>(self)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top: 20px;"><a href="{% url 'landing' %}">back to dashboard</a></p>
+{% endblock %}

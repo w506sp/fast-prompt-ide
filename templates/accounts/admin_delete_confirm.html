@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}admin delete - fast-prompt-ide{% endblock %}
+
+{% block content %}
+    <h1>admin: remove user account</h1>
+    <p class="error">warning: you are about to delete the user account: <strong>{{ target_user.username }}</strong>.</p>
+    <p>this action will remove all data associated with this user.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin: 20px 0;">
+            <button type="submit" class="btn-danger">confirm removal</button>
+            <a href="{% url 'admin_dashboard' %}" style="margin-left: 20px;">cancel</a>
+        </div>
+    </form>
+{% endblock %}

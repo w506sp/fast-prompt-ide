@@ -98,6 +98,9 @@
         <nav>
             <a href="{% url 'landing' %}">dashboard</a>
             {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}">admin tools</a>
+                {% endif %}
                 <span>user:{{ user.username }}</span>
                 <form method="post" action="{% url 'logout' %}" style="display:inline;">
                     {% csrf_token %}
