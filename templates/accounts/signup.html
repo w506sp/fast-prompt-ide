@@ -4,13 +4,13 @@
 
 {% block content %}
     <h1>signup</h1>
-    <p>create a developer account to start managing your local llm prompts.</p>
+    <p>create a developer account to start managing your prompts.</p>
     <form method="post">
         {% csrf_token %}
-        <div class="code-block">
+        <div style="margin-bottom: 20px;">
             {{ form.as_p }}
         </div>
-        <button type="submit">create developer profile</button>
+        <button type="submit">create account</button>
     </form>
-    <p>already registered? <a href="{% url 'login' %}">authenticate here</a>.</p>
+    <p>already registered? <a href="{% url 'login' %}">login here</a>.</p>
 {% endblock %}

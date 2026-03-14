@@ -4,16 +4,16 @@
 
 {% block content %}
     <h1>authenticate</h1>
-    <p>please provide your developer credentials.</p>
+    <p>please provide your credentials.</p>
     {% if form.errors %}
-        <p class="error">error: invalid credentials. check your username and password.</p>
+        <p class="error">invalid username or password.</p>
     {% endif %}
     <form method="post">
         {% csrf_token %}
-        <div class="code-block">
+        <div style="margin-bottom: 20px;">
             {{ form.as_p }}
         </div>
         <button type="submit">access dashboard</button>
     </form>
-    <p>missing an account? <a href="{% url 'signup' %}">signup</a> to get started.</p>
+    <p>missing an account? <a href="{% url 'signup' %}">signup here</a>.</p>
 {% endblock %}

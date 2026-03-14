@@ -4,27 +4,21 @@
 
 {% block content %}
     <h1>dashboard</h1>
-    <p>welcome to the <strong>fast-prompt-ide</strong> control panel.</p>
+    <p>welcome to <strong>fast-prompt-ide</strong>.</p>
     
     {% if not user.is_authenticated %}
-        <p>please <a href="{% url 'login' %}">authenticate</a> or <a href="{% url 'signup' %}">signup</a> to manage your workspaces, prompt templates, and local llm executions.</p>
+        <p>please <a href="{% url 'login' %}">authenticate</a> or <a href="{% url 'signup' %}">signup</a> to continue.</p>
         
-        <h3>core features</h3>
+        <h3>features</h3>
         <ul>
-            <li><strong>workspace management:</strong> organize your llm projects.</li>
-            <li><strong>prompt versioning:</strong> track changes and rollback with ease.</li>
-            <li><strong>real-time execution:</strong> test prompts against local models (ollama) with streaming output.</li>
-            <li><strong>performance metrics:</strong> monitor latency and token usage.</li>
+            <li><strong>workspaces:</strong> project organization.</li>
+            <li><strong>prompting:</strong> versioning and history.</li>
+            <li><strong>execution:</strong> testing against local models.</li>
+            <li><strong>metrics:</strong> latency and usage monitoring.</li>
         </ul>
     {% else %}
-        <p>status: <strong>active session</strong> for <strong>{{ user.username }}</strong></p>
-        
-        <div class="code-block">
-            $ project_status --summary<br>
-            > authenticated as {{ user.username }}<br>
-            > awaiting workspace selection...
-        </div>
-
-        <p><a href="{% url 'delete_account' %}" class="btn-danger">terminate account</a></p>
+        <p>session: <strong>active</strong> (user: {{ user.username }})</p>
+        <p>awaiting workspace selection...</p>
+        <p><a href="{% url 'delete_account' %}" class="btn-danger">remove account</a></p>
     {% endif %}
 {% endblock %}
