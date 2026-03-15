@@ -19,6 +19,8 @@
     {% else %}
         <p>session: <strong>active</strong> (user: {{ user.username }})</p>
         <p>awaiting workspace selection...</p>
-        <p><a href="{% url 'delete_account' %}" class="btn-danger">remove account</a></p>
+        {% if not user.is_superuser %}
+            <p><a href="{% url 'delete_account' %}" class="btn-danger">remove account</a></p>
+        {% endif %}
     {% endif %}
 {% endblock %}

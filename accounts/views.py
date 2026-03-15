@@ -17,6 +17,8 @@ class SignUpView(generic.CreateView):
 
 @login_required
 def delete_account(request):
+    if request.user.is_superuser:
+        return redirect('landing')
     if request.method == 'POST':
         user = request.user
         auth_logout(request)
