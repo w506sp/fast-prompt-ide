@@ -22,10 +22,12 @@
                 <td style="padding: 10px;">{{ u.username }}</td>
                 <td style="padding: 10px;">{% if u.is_superuser %}yes{% else %}no{% endif %}</td>
                 <td style="padding: 10px;">
-                    {% if u.id != user.id %}
-                        <a href="{% url 'admin_delete_user' u.id %}" class="btn-danger">delete</a>
-                    {% else %}
+                    {% if u.id == user.id %}
                         <span>(self)</span>
+                    {% elif u.is_superuser %}
+                        <span>(admin)</span>
+                    {% else %}
+                        <a href="{% url 'admin_delete_user' u.id %}" class="btn-danger">delete</a>
                     {% endif %}
                 </td>
             </tr>

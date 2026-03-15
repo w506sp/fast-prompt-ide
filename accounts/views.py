@@ -35,6 +35,8 @@ def admin_dashboard(request):
 @user_passes_test(is_superuser)
 def admin_delete_user(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
+    if target_user.is_superuser:
+        return redirect('admin_dashboard')
     if request.method == 'POST':
         target_user.delete()
         return redirect('admin_dashboard')
