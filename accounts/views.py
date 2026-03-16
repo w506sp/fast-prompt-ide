@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm
+from .forms import SignUpForm
 from django.contrib.auth import login as auth_login, logout as auth_logout, get_user_model
 from django.urls import reverse_lazy
 from django.views import generic
@@ -11,7 +11,7 @@ def landing(request):
     return render(request, 'accounts/landing.html')
 
 class SignUpView(generic.CreateView):
-    form_class = UserCreationForm
+    form_class = SignUpForm
     success_url = reverse_lazy('login')
     template_name = 'accounts/signup.html'
 
