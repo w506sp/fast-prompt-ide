@@ -1,0 +1,122 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView, CreateView, DeleteView
+from django.urls import reverse_lazy, reverse
+from .models import Workspace, Project, Membership
+from .forms import WorkspaceForm, ProjectForm, AddMemberForm
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
+
+class WorkspaceListView(LoginRequiredMixin, ListView):
+    model = Workspace
+    template_name = 'ide/workspace_list.html'
+    context_object_name = 'workspaces'
+
+    def get_queryset(self):
+        return Workspace.objects.filter(members=self.request.user)
+
+class WorkspaceCreateView(LoginRequiredMixin, CreateView):
+    model = Workspace
+    form_class = WorkspaceForm
+    template_name = 'ide/workspace_form.html'
+    success_url = reverse_lazy('workspace_list')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        response = super().form_valid(form)
+        Membership.objects.create(user=self.request.user, workspace=self.object, role='admin')
+        return response
+
+class WorkspaceDetailView(LoginRequiredMixin, DetailView):
+    model = Workspace
+    template_name = 'ide/workspace_detail.html'
+
+    def get_queryset(self):
+        return Workspace.objects.filter(members=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['projects'] = self.object.projects.all()
+        context['memberships'] = Membership.objects.filter(workspace=self.object)
+        context['member_form'] = AddMemberForm()
+        
+        # Rigorous check for current user's role
+        current_membership = Membership.objects.get(user=self.request.user, workspace=self.object)
+        context['user_role'] = current_membership.role
+        context['can_manage_projects'] = current_membership.role in ['admin', 'member']
+        context['is_owner'] = self.object.owner == self.request.user
+        
+        return context
+
+class WorkspaceDeleteView(LoginRequiredMixin, DeleteView):
+    model = Workspace
+    template_name = 'ide/workspace_confirm_delete.html'
+    success_url = reverse_lazy('workspace_list')
+
+    def get_queryset(self):
+        # Only owner can delete workspace
+        return Workspace.objects.filter(owner=self.request.user)
+
+class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+    model = Project
+    template_name = 'ide/project_confirm_delete.html'
+
+    def get_queryset(self):
+        # Only admin or member of the workspace can delete projects
+        return Project.objects.filter(
+            workspace__membership__user=self.request.user,
+            workspace__membership__role__in=['admin', 'member']
+        ).distinct()
+
+    def get_success_url(self):
+        return reverse('workspace_detail', kwargs={'pk': self.object.workspace.pk})
+
+@login_required
+def create_project(request, workspace_pk):
+    workspace = get_object_or_404(Workspace, pk=workspace_pk, members=request.user)
+    
+    # Rigid role check
+    membership = get_object_or_404(Membership, workspace=workspace, user=request.user)
+    if membership.role not in ['admin', 'member']:
+        raise PermissionDenied("Viewers cannot create projects.")
+
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.workspace = workspace
+            project.save()
+            messages.success(request, f"Project '{project.name}' created.")
+            return redirect('workspace_detail', pk=workspace.pk)
+    else:
+        form = ProjectForm()
+    return render(request, 'ide/project_form.html', {'form': form, 'workspace': workspace})
+
+@login_required
+def add_member(request, workspace_pk):
+    # Only owner can add members
+    workspace = get_object_or_404(Workspace, pk=workspace_pk, owner=request.user)
+    if request.method == 'POST':
+        form = AddMemberForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data['username']
+            role = form.cleaned_data['role']
+            Membership.objects.get_or_create(user=user, workspace=workspace, defaults={'role': role})
+            messages.success(request, f"User {user.username} added to workspace as {role}.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
+    return redirect('workspace_detail', pk=workspace.pk)
+
+@login_required
+def remove_member(request, workspace_pk, user_id):
+    # Only owner can remove members
+    workspace = get_object_or_404(Workspace, pk=workspace_pk, owner=request.user)
+    membership = get_object_or_404(Membership, workspace=workspace, user_id=user_id)
+    if membership.user != workspace.owner:
+        membership.delete()
+        messages.success(request, f"Member {membership.user.username} removed.")
+    else:
+        messages.error(request, "Cannot remove the workspace owner.")
+    return redirect('workspace_detail', pk=workspace.pk)
