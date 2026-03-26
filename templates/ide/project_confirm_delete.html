@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>delete project: {{ object.name }}</h2>
+<p class="error">are you sure you want to delete this project? this cannot be undone.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger">yes, delete project</button>
+    <a href="{% url 'workspace_detail' object.workspace.pk %}">no, cancel</a>
+</form>
+{% endblock %}

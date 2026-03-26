@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>workspace: {{ workspace.name }}</h2>
+<p>{{ workspace.description|default:"" }}</p>
+<p><strong>your role:</strong> {{ user_role }}</p>
+
+{% if is_owner %}
+    <p><a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete workspace</a></p>
+{% endif %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>projects</h3>
+{% if can_manage_projects %}
+    <p><a href="{% url 'project_create' workspace.pk %}">+ create new project</a></p>
+{% endif %}
+
+{% if projects %}
+    <ul>
+    {% for project in projects %}
+        <li>
+            <strong>{{ project.name }}</strong>
+            {% if can_manage_projects %}
+                - <a href="{% url 'project_delete' project.pk %}" class="btn-danger">delete</a>
+            {% endif %}
+            <br>
+            <small>{{ project.description|default:"" }}</small>
+            <br>
+            <em>coming soon: prompt editor</em>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>no projects in this workspace yet.</p>
+{% endif %}
+
+<h3>members</h3>
+<ul>
+{% for membership in memberships %}
+    <li>
+        {{ membership.user.username }} ({{ membership.role }})
+        {% if membership.user == workspace.owner %}
+            <strong>(owner)</strong>
+        {% elif is_owner %}
+            - <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">remove</button>
+            </form>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+{% if is_owner %}
+    <h4>add member</h4>
+    <form method="post" action="{% url 'add_member' workspace.pk %}">
+        {% csrf_token %}
+        {{ member_form.as_p }}
+        <button type="submit">add member</button>
+    </form>
+{% endif %}
+
+<hr>
+<p><a href="{% url 'workspace_list' %}">&larr; back to all workspaces</a></p>
+{% endblock %}

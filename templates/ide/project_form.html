@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>new project in {{ workspace.name }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">save project</button>
+    <a href="{% url 'workspace_detail' workspace.pk %}">cancel</a>
+</form>
+{% endblock %}
