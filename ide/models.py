@@ -34,6 +34,23 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+class PromptVersion(models.Model):
+    template = models.ForeignKey('PromptTemplate', on_delete=models.CASCADE, related_name='versions')
+    version_number = models.PositiveIntegerField()
+    content = models.TextField()
+    model_name = models.CharField(max_length=255)
+    model_config = models.JSONField(default=dict, blank=True)
+    commit_message = models.CharField(max_length=500, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-version_number']
+        unique_together = ('template', 'version_number')
+
+    def __str__(self):
+        return f"{self.template.name} v{self.version_number}"
+
 class PromptTemplate(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='templates')
     name = models.CharField(max_length=255)
