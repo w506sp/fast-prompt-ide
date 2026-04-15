@@ -51,6 +51,25 @@ class PromptVersion(models.Model):
     def __str__(self):
         return f"{self.template.name} v{self.version_number}"
 
+class Execution(models.Model):
+    STATUS_CHOICES = (
+        ('success', 'Success'),
+        ('error', 'Error'),
+        ('timeout', 'Timeout'),
+    )
+    version = models.ForeignKey(PromptVersion, on_delete=models.CASCADE, related_name='executions')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='executions')
+    input_data = models.JSONField(default=dict)
+    output_text = models.TextField(blank=True)
+    latency_ms = models.IntegerField(null=True, blank=True)
+    token_usage = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='success')
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Execution {self.pk} — {self.status}"
+
 class Variable(models.Model):
     version = models.ForeignKey(PromptVersion, on_delete=models.CASCADE, related_name='variables')
     name = models.CharField(max_length=255)
