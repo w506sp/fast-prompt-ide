@@ -51,6 +51,15 @@ class PromptVersion(models.Model):
     def __str__(self):
         return f"{self.template.name} v{self.version_number}"
 
+class Variable(models.Model):
+    version = models.ForeignKey(PromptVersion, on_delete=models.CASCADE, related_name='variables')
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=500, blank=True)
+    default_value = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 class PromptTemplate(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='templates')
     name = models.CharField(max_length=255)
