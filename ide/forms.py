@@ -1,5 +1,5 @@
 from django import forms
-from .models import Workspace, Project, Membership
+from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion
 from django.contrib.auth.models import User
 
 class WorkspaceForm(forms.ModelForm):
@@ -23,3 +23,16 @@ class AddMemberForm(forms.Form):
         except User.DoesNotExist:
             raise forms.ValidationError("User does not exist.")
         return user
+
+class PromptTemplateForm(forms.ModelForm):
+    class Meta:
+        model = PromptTemplate
+        fields = ['name', 'description']
+
+class PromptVersionForm(forms.ModelForm):
+    class Meta:
+        model = PromptVersion
+        fields = ['content', 'model_name', 'commit_message']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 15, 'placeholder': 'Write your prompt here. Use {{variable_name}} for dynamic variables.'}),
+        }
