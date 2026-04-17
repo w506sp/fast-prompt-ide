@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView
 from django.urls import reverse_lazy, reverse
-from .models import Workspace, Project, Membership
-from .forms import WorkspaceForm, ProjectForm, AddMemberForm
+from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable
+from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 
@@ -92,6 +92,47 @@ def create_project(request, workspace_pk):
     else:
         form = ProjectForm()
     return render(request, 'ide/project_form.html', {'form': form, 'workspace': workspace})
+
+class ProjectDetailView(LoginRequiredMixin, DetailView):
+    model = Project
+    template_name = 'ide/project_detail.html'
+
+    def get_queryset(self):
+        return Project.objects.filter(workspace__members=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['templates'] = self.object.templates.all().order_by('-created_at')
+        membership = Membership.objects.get(user=self.request.user, workspace=self.object.workspace)
+        context['can_manage'] = membership.role in ['admin', 'member']
+        return context
+
+class PromptTemplateCreateView(LoginRequiredMixin, CreateView):
+    model = PromptTemplate
+    form_class = PromptTemplateForm
+    template_name = 'ide/prompt_template_form.html'
+
+    def _get_project(self):
+        return get_object_or_404(Project, pk=self.kwargs['project_pk'], workspace__members=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        project = self._get_project()
+        membership = get_object_or_404(Membership, workspace=project.workspace, user=request.user)
+        if membership.role not in ['admin', 'member']:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.project = self._get_project()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = self._get_project()
+        return context
+
+    def get_success_url(self):
+        return reverse('project_detail', kwargs={'pk': self.object.project.pk})
 
 @login_required
 def add_member(request, workspace_pk):

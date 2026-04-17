@@ -10,4 +10,6 @@ urlpatterns = [
     path('projects/<int:pk>/delete/', views.ProjectDeleteView.as_view(), name='project_delete'),
     path('<int:workspace_pk>/members/add/', views.add_member, name='add_member'),
     path('<int:workspace_pk>/members/remove/<int:user_id>/', views.remove_member, name='remove_member'),
+    path('projects/<int:pk>/', views.ProjectDetailView.as_view(), name='project_detail'),
+    path('projects/<int:project_pk>/templates/new/', views.PromptTemplateCreateView.as_view(), name='prompt_template_create'),
 ]
