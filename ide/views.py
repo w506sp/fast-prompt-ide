@@ -134,6 +134,20 @@ class PromptTemplateCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('project_detail', kwargs={'pk': self.object.project.pk})
 
+class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
+    model = PromptTemplate
+    template_name = 'ide/prompt_template_detail.html'
+
+    def get_queryset(self):
+        return PromptTemplate.objects.filter(project__workspace__members=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['versions'] = self.object.versions.all()
+        membership = Membership.objects.get(user=self.request.user, workspace=self.object.project.workspace)
+        context['can_manage'] = membership.role in ['admin', 'member']
+        return context
+
 @login_required
 def add_member(request, workspace_pk):
     # Only owner can add members
