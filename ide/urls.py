@@ -13,4 +13,5 @@ urlpatterns = [
     path('projects/<int:pk>/', views.ProjectDetailView.as_view(), name='project_detail'),
     path('projects/<int:project_pk>/templates/new/', views.PromptTemplateCreateView.as_view(), name='prompt_template_create'),
     path('templates/<int:pk>/', views.PromptTemplateDetailView.as_view(), name='prompt_template_detail'),
+    path('templates/<int:template_pk>/versions/new/', views.create_prompt_version, name='prompt_version_create'),
 ]

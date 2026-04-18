@@ -149,6 +149,30 @@ class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
         return context
 
 @login_required
+def create_prompt_version(request, template_pk):
+    template = get_object_or_404(PromptTemplate, pk=template_pk, project__workspace__members=request.user)
+    membership = get_object_or_404(Membership, workspace=template.project.workspace, user=request.user)
+    if membership.role not in ['admin', 'member']:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        form = PromptVersionForm(request.POST)
+        if form.is_valid():
+            version = form.save(commit=False)
+            version.template = template
+            last = template.versions.first()
+            version.version_number = (last.version_number + 1) if last else 1
+            version.save()
+            from .utils import extract_variables
+            for name in extract_variables(version.content):
+                Variable.objects.get_or_create(version=version, name=name)
+            messages.success(request, f"Version {version.version_number} saved.")
+            return redirect('prompt_template_detail', pk=template.pk)
+    else:
+        form = PromptVersionForm()
+    return render(request, 'ide/prompt_version_form.html', {'form': form, 'template': template})
+
+@login_required
 def add_member(request, workspace_pk):
     # Only owner can add members
     workspace = get_object_or_404(Workspace, pk=workspace_pk, owner=request.user)
