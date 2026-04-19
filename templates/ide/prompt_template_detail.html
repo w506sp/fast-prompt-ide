@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ template.name }} — fast-prompt-ide{% endblock %}
+
+{% block content %}
+<h2>{{ template.name }}</h2>
+<p>{{ template.description|default:"" }}</p>
+
+{% if messages %}
+    <ul>{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if can_manage %}
+    <p><a href="{% url 'prompt_version_create' template.pk %}">+ new version</a></p>
+{% endif %}
+
+<h3>versions</h3>
+{% if versions %}
+    <ul>
+    {% for version in versions %}
+        <li>
+            <strong>v{{ version.version_number }}</strong> — <code>{{ version.model_name }}</code>
+            {% if version.commit_message %} — <em>{{ version.commit_message }}</em>{% endif %}
+            {% if version.is_active %} <span>[active]</span>{% endif %}
+            <br><small>{{ version.created_at|date:"Y-m-d H:i" }} — {{ version.variables.count }} variable(s)</small>
+            {% if version.variables.all %}
+                <br><small>vars: {% for v in version.variables.all %}<code>{{"{{"}}{{ v.name }}{{"}}"}}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>no versions yet. create the first one above.</p>
+{% endif %}
+
+<hr>
+<p><a href="{% url 'project_detail' template.project.pk %}">&larr; back to {{ template.project.name }}</a></p>
+{% endblock %}

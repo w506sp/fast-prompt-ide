@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}new template — fast-prompt-ide{% endblock %}
+
+{% block content %}
+<h2>new prompt template</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">create template</button>
+</form>
+<hr>
+<p><a href="{% url 'project_detail' project.pk %}">&larr; back to {{ project.name }}</a></p>
+{% endblock %}

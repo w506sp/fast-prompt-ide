@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} — fast-prompt-ide{% endblock %}
+
+{% block content %}
+<h2>project: {{ project.name }}</h2>
+<p>{{ project.description|default:"" }}</p>
+
+{% if messages %}
+    <ul>{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h3>prompt templates</h3>
+{% if can_manage %}
+    <p><a href="{% url 'prompt_template_create' project.pk %}">+ new template</a></p>
+{% endif %}
+
+{% if templates %}
+    <ul>
+    {% for tmpl in templates %}
+        <li>
+            <a href="{% url 'prompt_template_detail' tmpl.pk %}">{{ tmpl.name }}</a>
+            <br><small>{{ tmpl.description|default:"" }}{% if tmpl.description %} — {% endif %}{{ tmpl.versions.count }} version(s)</small>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>no prompt templates yet.</p>
+{% endif %}
+
+<hr>
+<p><a href="{% url 'workspace_detail' project.workspace.pk %}">&larr; back to {{ project.workspace.name }}</a></p>
+{% endblock %}
