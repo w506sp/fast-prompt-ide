@@ -26,14 +26,12 @@
     <ul>
     {% for project in projects %}
         <li>
-            <strong>{{ project.name }}</strong>
+            <a href="{% url 'project_detail' project.pk %}"><strong>{{ project.name }}</strong></a>
             {% if can_manage_projects %}
                 - <a href="{% url 'project_delete' project.pk %}" class="btn-danger">delete</a>
             {% endif %}
             <br>
             <small>{{ project.description|default:"" }}</small>
-            <br>
-            <em>coming soon: prompt editor</em>
         </li>
     {% endfor %}
     </ul>
