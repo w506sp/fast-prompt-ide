@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ template.name }} — fast-prompt-ide{% endblock %}
+{% block title %}{{ prompt_template.name }} — fast-prompt-ide{% endblock %}
 
 {% block content %}
-<h2>{{ template.name }}</h2>
-<p>{{ template.description|default:"" }}</p>
+<h2>{{ prompt_template.name }}</h2>
+<p>{{ prompt_template.description|default:"" }}</p>
 
 {% if messages %}
     <ul>{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
 {% endif %}
 
 {% if can_manage %}
-    <p><a href="{% url 'prompt_version_create' template.pk %}">+ new version</a></p>
+    <p><a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a></p>
 {% endif %}
 
 <h3>versions</h3>
@@ -24,7 +24,7 @@
             {% if version.is_active %} <span>[active]</span>{% endif %}
             <br><small>{{ version.created_at|date:"Y-m-d H:i" }} — {{ version.variables.count }} variable(s)</small>
             {% if version.variables.all %}
-                <br><small>vars: {% for v in version.variables.all %}<code>{{"{{"}}{{ v.name }}{{"}}"}}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+                <br><small>vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</small>
             {% endif %}
         </li>
     {% endfor %}
@@ -34,5 +34,5 @@
 {% endif %}
 
 <hr>
-<p><a href="{% url 'project_detail' template.project.pk %}">&larr; back to {{ template.project.name }}</a></p>
+<p><a href="{% url 'project_detail' prompt_template.project.pk %}">&larr; back to {{ prompt_template.project.name }}</a></p>
 {% endblock %}

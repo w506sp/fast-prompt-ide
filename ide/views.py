@@ -137,6 +137,7 @@ class PromptTemplateCreateView(LoginRequiredMixin, CreateView):
 class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
     model = PromptTemplate
     template_name = 'ide/prompt_template_detail.html'
+    context_object_name = 'prompt_template'
 
     def get_queryset(self):
         return PromptTemplate.objects.filter(project__workspace__members=self.request.user)
@@ -170,7 +171,7 @@ def create_prompt_version(request, template_pk):
             return redirect('prompt_template_detail', pk=template.pk)
     else:
         form = PromptVersionForm()
-    return render(request, 'ide/prompt_version_form.html', {'form': form, 'template': template})
+    return render(request, 'ide/prompt_version_form.html', {'form': form, 'prompt_template': template})
 
 @login_required
 def add_member(request, workspace_pk):

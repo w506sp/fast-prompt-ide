@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}new version — {{ template.name }} — fast-prompt-ide{% endblock %}
+{% block title %}new version — {{ prompt_template.name }} — fast-prompt-ide{% endblock %}
 
 {% block content %}
-<h2>new version: {{ template.name }}</h2>
+<h2>new version: {{ prompt_template.name }}</h2>
 <p><small>use <code>&#123;&#123;variable_name&#125;&#125;</code> syntax to define dynamic variables in your prompt.</small></p>
 <form method="post">
     {% csrf_token %}
@@ -11,5 +11,5 @@
     <button type="submit">save version</button>
 </form>
 <hr>
-<p><a href="{% url 'prompt_template_detail' template.pk %}">&larr; back to {{ template.name }}</a></p>
+<p><a href="{% url 'prompt_template_detail' prompt_template.pk %}">&larr; back to {{ prompt_template.name }}</a></p>
 {% endblock %}
