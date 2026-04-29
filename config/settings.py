@@ -122,3 +122,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LOGIN_REDIRECT_URL = 'landing'
 LOGOUT_REDIRECT_URL = 'landing'
+
+# Ollama local model server
+OLLAMA_BASE_URL = 'http://localhost:11434'
+OLLAMA_TIMEOUT = 120

@@ -1,6 +1,7 @@
 from django import forms
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion
 from django.contrib.auth.models import User
+from . import ollama_client
 
 class WorkspaceForm(forms.ModelForm):
     class Meta:
@@ -36,3 +37,12 @@ class PromptVersionForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={'rows': 15, 'placeholder': 'Write your prompt here. Use {{variable_name}} for dynamic variables.'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        models = ollama_client.list_models()
+        if models:
+            self.fields['model_name'] = forms.ChoiceField(
+                choices=[(m, m) for m in models],
+                help_text="Models discovered on the local Ollama server.",
+            )
