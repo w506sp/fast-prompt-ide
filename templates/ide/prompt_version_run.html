@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}run v{{ version.version_number }} — {{ version.template.name }}{% endblock %}
+
+{% block content %}
+<h2>run {{ version.template.name }} <small>v{{ version.version_number }}</small></h2>
+<p><code>{{ version.model_name }}</code></p>
+
+<h3>prompt</h3>
+<pre style="background:#f0f0f0; padding:10px; white-space:pre-wrap;">{{ version.content }}</pre>
+
+<h3>inputs</h3>
+<form method="post">
+    {% csrf_token %}
+    {% if form.fields %}
+        {{ form.as_p }}
+    {% else %}
+        <p><em>this version has no variables — submit to run as-is.</em></p>
+    {% endif %}
+    <button type="submit">run</button>
+</form>
+
+<hr>
+<p><a href="{% url 'prompt_template_detail' version.template.pk %}">&larr; back to {{ version.template.name }}</a></p>
+{% endblock %}

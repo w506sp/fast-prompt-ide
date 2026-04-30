@@ -46,3 +46,25 @@ class PromptVersionForm(forms.ModelForm):
                 choices=[(m, m) for m in models],
                 help_text="Models discovered on the local Ollama server.",
             )
+
+
+class RunPromptForm(forms.Form):
+    """Dynamic form: one field per Variable on a PromptVersion."""
+
+    def __init__(self, *args, variables=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        for var in variables or []:
+            self.fields[f'var_{var.name}'] = forms.CharField(
+                label=var.name,
+                required=False,
+                initial=var.default_value,
+                help_text=var.description or '',
+                widget=forms.Textarea(attrs={'rows': 2}),
+            )
+
+    def variable_values(self):
+        return {
+            key[len('var_'):]: value
+            for key, value in self.cleaned_data.items()
+            if key.startswith('var_')
+        }

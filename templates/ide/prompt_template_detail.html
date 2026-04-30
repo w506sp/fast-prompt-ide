@@ -22,6 +22,7 @@
             <strong>v{{ version.version_number }}</strong> — <code>{{ version.model_name }}</code>
             {% if version.commit_message %} — <em>{{ version.commit_message }}</em>{% endif %}
             {% if version.is_active %} <span>[active]</span>{% endif %}
+            — <a href="{% url 'prompt_version_run' version.pk %}">run &rarr;</a>
             <br><small>{{ version.created_at|date:"Y-m-d H:i" }} — {{ version.variables.count }} variable(s)</small>
             {% if version.variables.all %}
                 <br><small>vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</small>

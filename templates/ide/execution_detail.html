@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}execution #{{ execution.pk }}{% endblock %}
+
+{% block content %}
+<h2>execution #{{ execution.pk }}</h2>
+<p>
+    <strong>{{ execution.version.template.name }}</strong> v{{ execution.version.version_number }}
+    — <code>{{ execution.version.model_name }}</code>
+    — <em>{{ execution.status }}</em>
+</p>
+<p>
+    <small>
+        {{ execution.created_at|date:"Y-m-d H:i:s" }}
+        {% if execution.latency_ms is not None %} — {{ execution.latency_ms }} ms{% endif %}
+        {% with tu=execution.token_usage %}
+            {% if tu.prompt_eval_count %} — prompt tokens: {{ tu.prompt_eval_count }}{% endif %}
+            {% if tu.eval_count %} — output tokens: {{ tu.eval_count }}{% endif %}
+        {% endwith %}
+    </small>
+</p>
+
+{% if execution.status == 'success' %}
+    <h3>output</h3>
+    <pre style="background:#f0f0f0; padding:10px; white-space:pre-wrap;">{{ execution.output_text }}</pre>
+{% else %}
+    <h3>error</h3>
+    <pre class="error" style="white-space:pre-wrap;">{{ execution.error_message }}</pre>
+{% endif %}
+
+{% if execution.input_data %}
+    <h3>inputs</h3>
+    <ul>
+    {% for name, value in execution.input_data.items %}
+        <li><code>{{ name }}</code>: {{ value }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<hr>
+<p>
+    <a href="{% url 'prompt_version_run' execution.version.pk %}">run again</a>
+    — <a href="{% url 'prompt_template_detail' execution.version.template.pk %}">&larr; back to {{ execution.version.template.name }}</a>
+</p>
+{% endblock %}
