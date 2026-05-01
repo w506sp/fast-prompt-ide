@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}executions — {{ version.template.name }} v{{ version.version_number }}{% endblock %}
+
+{% block content %}
+<h2>executions</h2>
+<p><strong>{{ version.template.name }}</strong> v{{ version.version_number }} — <code>{{ version.model_name }}</code></p>
+
+{% if executions %}
+    <ul>
+    {% for ex in executions %}
+        <li>
+            <a href="{% url 'execution_detail' ex.pk %}">#{{ ex.pk }}</a>
+            — <em>{{ ex.status }}</em>
+            {% if ex.latency_ms is not None %} — {{ ex.latency_ms }} ms{% endif %}
+            {% if ex.token_usage.eval_count %} — {{ ex.token_usage.eval_count }} tok{% endif %}
+            <br><small>{{ ex.created_at|date:"Y-m-d H:i:s" }}{% if ex.user %} — {{ ex.user.username }}{% endif %}</small>
+        </li>
+    {% endfor %}
+    </ul>
+
+    {% if is_paginated %}
+        <p>
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&larr; prev</a>{% endif %}
+            page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">next &rarr;</a>{% endif %}
+        </p>
+    {% endif %}
+{% else %}
+    <p><em>no runs yet.</em> <a href="{% url 'prompt_version_run' version.pk %}">run this version</a></p>
+{% endif %}
+
+<hr>
+<p><a href="{% url 'prompt_template_detail' version.template.pk %}">&larr; back to {{ version.template.name }}</a></p>
+{% endblock %}

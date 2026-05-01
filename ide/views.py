@@ -240,6 +240,21 @@ class ExecutionDetailView(LoginRequiredMixin, DetailView):
         )
 
 
+class ExecutionListView(LoginRequiredMixin, ListView):
+    template_name = 'ide/execution_list.html'
+    context_object_name = 'executions'
+    paginate_by = 25
+
+    def get_queryset(self):
+        self.version = _get_runnable_version(self.request.user, self.kwargs['version_pk'])
+        return self.version.executions.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['version'] = self.version
+        return context
+
+
 @login_required
 def add_member(request, workspace_pk):
     # Only owner can add members
