@@ -83,6 +83,45 @@
         .btn-danger {
             color: #aa0000 !important;
         }
+        .muted { color: #666; }
+        .meta { color: #555; font-size: 0.85em; }
+        pre.prompt-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        ul.cards { list-style: none; padding: 0; }
+        ul.cards > li {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+        ul.cards > li:hover { background: #fafafa; }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .messages li {
+            padding: 8px 12px;
+            border-left: 3px solid #999;
+            margin-bottom: 6px;
+            background: #f6f6f6;
+        }
+        .messages li.success { border-color: #1a7f37; background: #f0faf2; }
+        .messages li.error   { border-color: #aa0000; background: #fdf0f0; color: #6a0000; }
+        .messages li.warning { border-color: #b58900; background: #fdf6e3; }
+        .breadcrumbs {
+            font-size: 0.9em;
+            color: #555;
+            margin: 0 0 15px 0;
+        }
+        .breadcrumbs a { color: #005577; text-decoration: none; }
+        .breadcrumbs a:hover { text-decoration: underline; }
+        .breadcrumbs .sep { color: #aaa; margin: 0 6px; }
         footer {
             margin-top: 60px;
             border-top: 1px solid #ccc;
@@ -117,6 +156,14 @@
         </nav>
     </header>
     <main>
+        {% block breadcrumbs %}{% endblock %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
     <footer>
