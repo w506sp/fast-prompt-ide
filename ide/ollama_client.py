@@ -30,6 +30,9 @@ def _request(path, payload=None, method='GET', timeout=None):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace') if exc.fp else ''
+        raise OllamaError(f"Ollama returned HTTP {exc.code}: {body or exc.reason}") from exc
     except urllib.error.URLError as exc:
         raise OllamaError(f"Could not reach Ollama at {_base_url()}: {exc.reason}") from exc
     except json.JSONDecodeError as exc:
