@@ -1,53 +1,55 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ workspace.name }} — fast-prompt-ide{% endblock %}
+
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <strong>{{ workspace.name }}</strong>
+</p>
+{% endblock %}
+
 {% block content %}
-<h2>workspace: {{ workspace.name }}</h2>
-<p>{{ workspace.description|default:"" }}</p>
-<p><strong>your role:</strong> {{ user_role }}</p>
+<h2>{{ workspace.name }}</h2>
+{% if workspace.description %}<p>{{ workspace.description }}</p>{% endif %}
+<p class="meta">your role: <strong>{{ user_role }}</strong>{% if is_owner %} (owner){% endif %}</p>
 
 {% if is_owner %}
     <p><a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete workspace</a></p>
 {% endif %}
 
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
 <h3>projects</h3>
 {% if can_manage_projects %}
-    <p><a href="{% url 'project_create' workspace.pk %}">+ create new project</a></p>
+    <p><a href="{% url 'project_create' workspace.pk %}">+ new project</a></p>
 {% endif %}
 
 {% if projects %}
-    <ul>
+    <ul class="cards">
     {% for project in projects %}
         <li>
             <a href="{% url 'project_detail' project.pk %}"><strong>{{ project.name }}</strong></a>
             {% if can_manage_projects %}
-                - <a href="{% url 'project_delete' project.pk %}" class="btn-danger">delete</a>
+                — <a href="{% url 'project_delete' project.pk %}" class="btn-danger">delete</a>
             {% endif %}
-            <br>
-            <small>{{ project.description|default:"" }}</small>
+            {% if project.description %}<br><span class="muted">{{ project.description }}</span>{% endif %}
         </li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>no projects in this workspace yet.</p>
+    <p class="muted">no projects in this workspace yet.{% if can_manage_projects %} <a href="{% url 'project_create' workspace.pk %}">create the first one</a>.{% endif %}</p>
 {% endif %}
 
 <h3>members</h3>
-<ul>
+<ul class="cards">
 {% for membership in memberships %}
     <li>
-        {{ membership.user.username }} ({{ membership.role }})
+        <strong>{{ membership.user.username }}</strong>
+        <span class="meta">({{ membership.role }})</span>
         {% if membership.user == workspace.owner %}
-            <strong>(owner)</strong>
+            <span class="meta">— owner</span>
         {% elif is_owner %}
-            - <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
+            — <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn-danger">remove</button>
             </form>
@@ -64,7 +66,4 @@
         <button type="submit">add member</button>
     </form>
 {% endif %}
-
-<hr>
-<p><a href="{% url 'workspace_list' %}">&larr; back to all workspaces</a></p>
 {% endblock %}

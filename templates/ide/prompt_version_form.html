@@ -2,14 +2,26 @@
 
 {% block title %}new version — {{ prompt_template.name }} — fast-prompt-ide{% endblock %}
 
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <a href="{% url 'workspace_detail' prompt_template.project.workspace.pk %}">{{ prompt_template.project.workspace.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'project_detail' prompt_template.project.pk %}">{{ prompt_template.project.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'prompt_template_detail' prompt_template.pk %}">{{ prompt_template.name }}</a>
+    <span class="sep">/</span>
+    <strong>new version</strong>
+</p>
+{% endblock %}
+
 {% block content %}
 <h2>new version: {{ prompt_template.name }}</h2>
-<p><small>use <code>&#123;&#123;variable_name&#125;&#125;</code> syntax to define dynamic variables in your prompt.</small></p>
+<p class="muted">use <code>&#123;&#123;variable_name&#125;&#125;</code> in the prompt to define dynamic variables. they'll show up as input fields when you run this version.</p>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">save version</button>
 </form>
-<hr>
-<p><a href="{% url 'prompt_template_detail' prompt_template.pk %}">&larr; back to {{ prompt_template.name }}</a></p>
 {% endblock %}

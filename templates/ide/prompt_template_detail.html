@@ -2,13 +2,21 @@
 
 {% block title %}{{ prompt_template.name }} — fast-prompt-ide{% endblock %}
 
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <a href="{% url 'workspace_detail' prompt_template.project.workspace.pk %}">{{ prompt_template.project.workspace.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'project_detail' prompt_template.project.pk %}">{{ prompt_template.project.name }}</a>
+    <span class="sep">/</span>
+    <strong>{{ prompt_template.name }}</strong>
+</p>
+{% endblock %}
+
 {% block content %}
 <h2>{{ prompt_template.name }}</h2>
-<p>{{ prompt_template.description|default:"" }}</p>
-
-{% if messages %}
-    <ul>{% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}</ul>
-{% endif %}
+{% if prompt_template.description %}<p>{{ prompt_template.description }}</p>{% endif %}
 
 {% if can_manage %}
     <p><a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a></p>
@@ -16,25 +24,26 @@
 
 <h3>versions</h3>
 {% if versions %}
-    <ul>
+    <ul class="cards">
     {% for version in versions %}
         <li>
-            <strong>v{{ version.version_number }}</strong> — <code>{{ version.model_name }}</code>
+            <strong>v{{ version.version_number }}</strong>
+            — <code>{{ version.model_name }}</code>
             {% if version.commit_message %} — <em>{{ version.commit_message }}</em>{% endif %}
-            {% if version.is_active %} <span>[active]</span>{% endif %}
-            — <a href="{% url 'prompt_version_run' version.pk %}">run &rarr;</a>
-            — <a href="{% url 'execution_list' version.pk %}">history ({{ version.executions.count }})</a>
-            <br><small>{{ version.created_at|date:"Y-m-d H:i" }} — {{ version.variables.count }} variable(s)</small>
+            {% if version.is_active %} <span class="meta">[active]</span>{% endif %}
+            <br>
+            <a href="{% url 'prompt_version_run' version.pk %}">run &rarr;</a>
+            <span class="sep">·</span>
+            <a href="{% url 'execution_list' version.pk %}">history ({{ version.executions.count }})</a>
+            <br>
+            <span class="meta">{{ version.created_at|date:"Y-m-d H:i" }}</span>
             {% if version.variables.all %}
-                <br><small>vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+                <br><span class="meta">vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</span>
             {% endif %}
         </li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>no versions yet. create the first one above.</p>
+    <p class="muted">no versions yet.{% if can_manage %} <a href="{% url 'prompt_version_create' prompt_template.pk %}">create the first one</a>.{% endif %}</p>
 {% endif %}
-
-<hr>
-<p><a href="{% url 'project_detail' prompt_template.project.pk %}">&larr; back to {{ prompt_template.project.name }}</a></p>
 {% endblock %}

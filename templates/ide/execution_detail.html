@@ -2,6 +2,22 @@
 
 {% block title %}execution #{{ execution.pk }}{% endblock %}
 
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <a href="{% url 'workspace_detail' execution.version.template.project.workspace.pk %}">{{ execution.version.template.project.workspace.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'project_detail' execution.version.template.project.pk %}">{{ execution.version.template.project.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'prompt_template_detail' execution.version.template.pk %}">{{ execution.version.template.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'execution_list' execution.version.pk %}">v{{ execution.version.version_number }} history</a>
+    <span class="sep">/</span>
+    <strong>#{{ execution.pk }}</strong>
+</p>
+{% endblock %}
+
 {% block content %}
 <h2>execution #{{ execution.pk }}</h2>
 <p>
@@ -9,37 +25,31 @@
     — <code>{{ execution.version.model_name }}</code>
     — <em>{{ execution.status }}</em>
 </p>
-<p>
-    <small>
-        {{ execution.created_at|date:"Y-m-d H:i:s" }}
-        {% if execution.latency_ms is not None %} — {{ execution.latency_ms }} ms{% endif %}
-        {% with tu=execution.token_usage %}
-            {% if tu.prompt_eval_count %} — prompt tokens: {{ tu.prompt_eval_count }}{% endif %}
-            {% if tu.eval_count %} — output tokens: {{ tu.eval_count }}{% endif %}
-        {% endwith %}
-    </small>
+<p class="meta">
+    {{ execution.created_at|date:"Y-m-d H:i:s" }}
+    {% if execution.latency_ms is not None %} · {{ execution.latency_ms }} ms{% endif %}
+    {% with tu=execution.token_usage %}
+        {% if tu.prompt_eval_count %} · prompt: {{ tu.prompt_eval_count }} tok{% endif %}
+        {% if tu.eval_count %} · output: {{ tu.eval_count }} tok{% endif %}
+    {% endwith %}
 </p>
 
 {% if execution.status == 'success' %}
     <h3>output</h3>
-    <pre style="background:#f0f0f0; padding:10px; white-space:pre-wrap;">{{ execution.output_text }}</pre>
+    <pre class="prompt-block">{{ execution.output_text }}</pre>
 {% else %}
     <h3>error</h3>
-    <pre class="error" style="white-space:pre-wrap;">{{ execution.error_message }}</pre>
+    <pre class="prompt-block error">{{ execution.error_message }}</pre>
 {% endif %}
 
 {% if execution.input_data %}
     <h3>inputs</h3>
-    <ul>
+    <ul class="cards">
     {% for name, value in execution.input_data.items %}
         <li><code>{{ name }}</code>: {{ value }}</li>
     {% endfor %}
     </ul>
 {% endif %}
 
-<hr>
-<p>
-    <a href="{% url 'prompt_version_run' execution.version.pk %}">run again</a>
-    — <a href="{% url 'prompt_template_detail' execution.version.template.pk %}">&larr; back to {{ execution.version.template.name }}</a>
-</p>
+<p><a href="{% url 'prompt_version_run' execution.version.pk %}">run again &rarr;</a></p>
 {% endblock %}

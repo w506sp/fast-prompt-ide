@@ -2,34 +2,45 @@
 
 {% block title %}executions — {{ version.template.name }} v{{ version.version_number }}{% endblock %}
 
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <a href="{% url 'workspace_detail' version.template.project.workspace.pk %}">{{ version.template.project.workspace.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'project_detail' version.template.project.pk %}">{{ version.template.project.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'prompt_template_detail' version.template.pk %}">{{ version.template.name }}</a>
+    <span class="sep">/</span>
+    <strong>v{{ version.version_number }} history</strong>
+</p>
+{% endblock %}
+
 {% block content %}
 <h2>executions</h2>
-<p><strong>{{ version.template.name }}</strong> v{{ version.version_number }} — <code>{{ version.model_name }}</code></p>
+<p class="meta"><strong>{{ version.template.name }}</strong> v{{ version.version_number }} — <code>{{ version.model_name }}</code></p>
 
 {% if executions %}
-    <ul>
+    <ul class="cards">
     {% for ex in executions %}
         <li>
-            <a href="{% url 'execution_detail' ex.pk %}">#{{ ex.pk }}</a>
-            — <em>{{ ex.status }}</em>
-            {% if ex.latency_ms is not None %} — {{ ex.latency_ms }} ms{% endif %}
-            {% if ex.token_usage.eval_count %} — {{ ex.token_usage.eval_count }} tok{% endif %}
-            <br><small>{{ ex.created_at|date:"Y-m-d H:i:s" }}{% if ex.user %} — {{ ex.user.username }}{% endif %}</small>
+            <a href="{% url 'execution_detail' ex.pk %}"><strong>#{{ ex.pk }}</strong></a>
+            <span class="meta">— {{ ex.status }}</span>
+            {% if ex.latency_ms is not None %}<span class="meta"> — {{ ex.latency_ms }} ms</span>{% endif %}
+            {% if ex.token_usage.eval_count %}<span class="meta"> — {{ ex.token_usage.eval_count }} tok</span>{% endif %}
+            <br><span class="meta">{{ ex.created_at|date:"Y-m-d H:i:s" }}{% if ex.user %} · {{ ex.user.username }}{% endif %}</span>
         </li>
     {% endfor %}
     </ul>
 
     {% if is_paginated %}
-        <p>
+        <p class="meta">
             {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&larr; prev</a>{% endif %}
             page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
             {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">next &rarr;</a>{% endif %}
         </p>
     {% endif %}
 {% else %}
-    <p><em>no runs yet.</em> <a href="{% url 'prompt_version_run' version.pk %}">run this version</a></p>
+    <p class="muted">no runs yet. <a href="{% url 'prompt_version_run' version.pk %}">run this version</a>.</p>
 {% endif %}
-
-<hr>
-<p><a href="{% url 'prompt_template_detail' version.template.pk %}">&larr; back to {{ version.template.name }}</a></p>
 {% endblock %}
