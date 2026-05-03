@@ -111,6 +111,12 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         context['can_manage'] = membership.role in ['admin', 'member']
         return context
 
+def _ollama_models_or_none():
+    """Return list of installed model names, or None if Ollama is unreachable/empty."""
+    models = ollama_client.list_models()
+    return models or None
+
+
 class PromptTemplateCreateView(LoginRequiredMixin, CreateView):
     model = PromptTemplate
     form_class = PromptTemplateForm
@@ -175,7 +181,11 @@ def create_prompt_version(request, template_pk):
             return redirect('prompt_template_detail', pk=template.pk)
     else:
         form = PromptVersionForm()
-    return render(request, 'ide/prompt_version_form.html', {'form': form, 'prompt_template': template})
+    return render(request, 'ide/prompt_version_form.html', {
+        'form': form,
+        'prompt_template': template,
+        'ollama_models': _ollama_models_or_none(),
+    })
 
 def _get_runnable_version(user, version_pk):
     """Return a PromptVersion the user is allowed to run, or 404."""
@@ -226,7 +236,6 @@ def run_prompt_version(request, version_pk):
     return render(request, 'ide/prompt_version_run.html', {
         'form': form,
         'version': version,
-        'rendered_preview': render_prompt(version.content, {v.name: f"{{{{{v.name}}}}}" for v in variables}),
     })
 
 

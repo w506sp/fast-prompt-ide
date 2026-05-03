@@ -19,6 +19,15 @@
 {% block content %}
 <h2>new version: {{ prompt_template.name }}</h2>
 <p class="muted">use <code>&#123;&#123;variable_name&#125;&#125;</code> in the prompt to define dynamic variables. they'll show up as input fields when you run this version.</p>
+
+{% if not ollama_models %}
+    <ul class="messages">
+        <li class="warning">
+            no ollama models detected at the configured server. you can still save a version with any model name as text — but running it will fail until you
+            <code>ollama pull &lt;model&gt;</code> on the host running the ollama daemon.
+        </li>
+    </ul>
+{% endif %}
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
