@@ -1,23 +1,31 @@
 {% extends 'base.html' %}
 
+{% block title %}workspaces — fast-prompt-ide{% endblock %}
+
 {% block content %}
 <h2>my workspaces</h2>
-<p><a href="{% url 'workspace_create' %}">+ create new workspace</a></p>
+<p><a href="{% url 'workspace_create' %}">+ new workspace</a></p>
 
 {% if workspaces %}
-    <ul>
+    <ul class="cards">
     {% for workspace in workspaces %}
         <li>
             <a href="{% url 'workspace_detail' workspace.pk %}"><strong>{{ workspace.name }}</strong></a>
             {% if workspace.owner == user %}
-                (owner) - <a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete</a>
+                <span class="meta">(owner)</span>
+                — <a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete</a>
             {% endif %}
-            <br>
-            <small>{{ workspace.description|default:"" }}</small>
+            {% if workspace.description %}<br><span class="muted">{{ workspace.description }}</span>{% endif %}
         </li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>you are not a member of any workspaces yet.</p>
+    <p class="muted">you are not a member of any workspaces yet.</p>
+    <p><a href="{% url 'workspace_create' %}">create your first workspace &rarr;</a> — every project, prompt, and run lives inside one.</p>
+{% endif %}
+
+{% if user.is_authenticated and not user.is_superuser %}
+    <hr>
+    <p class="meta"><a href="{% url 'delete_account' %}" class="btn-danger">remove my account</a></p>
 {% endif %}
 {% endblock %}

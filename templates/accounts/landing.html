@@ -1,26 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}dashboard - fast-prompt-ide{% endblock %}
+{% block title %}fast-prompt-ide — local llm ide{% endblock %}
 
 {% block content %}
-    <h1>dashboard</h1>
-    <p>welcome to <strong>fast-prompt-ide</strong>.</p>
-    
-    {% if not user.is_authenticated %}
-        <p>please <a href="{% url 'login' %}">authenticate</a> or <a href="{% url 'signup' %}">signup</a> to continue.</p>
-        
-        <h3>features</h3>
-        <ul>
-            <li><strong>workspaces:</strong> project organization.</li>
-            <li><strong>prompting:</strong> versioning and history.</li>
-            <li><strong>execution:</strong> testing against local models.</li>
-            <li><strong>metrics:</strong> latency and usage monitoring.</li>
-        </ul>
-    {% else %}
-        <p>session: <strong>active</strong> (user: {{ user.username }})</p>
-        <p>awaiting workspace selection...</p>
-        {% if not user.is_superuser %}
-            <p><a href="{% url 'delete_account' %}" class="btn-danger">remove account</a></p>
-        {% endif %}
-    {% endif %}
+    <h1>fast-prompt-ide</h1>
+    <p>a minimalist ide for managing, testing, and versioning prompts against local llms via <a href="https://ollama.com/">ollama</a>.</p>
+
+    <p><a href="{% url 'login' %}">log in</a> or <a href="{% url 'signup' %}">sign up</a> to get started.</p>
+
+    <h3>features</h3>
+    <ul>
+        <li><strong>workspaces &amp; projects</strong> — organize prompts and share them with teammates.</li>
+        <li><strong>versioning</strong> — every prompt change creates a numbered version with a commit message.</li>
+        <li><strong>execution</strong> — run a version against any installed ollama model, with <code>&#123;&#123;variable&#125;&#125;</code> substitution.</li>
+        <li><strong>history &amp; metrics</strong> — every run records latency and token usage.</li>
+    </ul>
 {% endblock %}
