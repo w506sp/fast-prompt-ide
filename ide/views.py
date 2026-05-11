@@ -3,7 +3,7 @@ import time
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution
 from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, RunPromptForm
@@ -52,6 +52,18 @@ class WorkspaceDetailView(LoginRequiredMixin, DetailView):
         context['is_owner'] = self.object.owner == self.request.user
         
         return context
+
+class WorkspaceUpdateView(LoginRequiredMixin, UpdateView):
+    model = Workspace
+    form_class = WorkspaceForm
+    template_name = 'ide/workspace_form.html'
+
+    def get_queryset(self):
+        # Only owner can edit workspace metadata
+        return Workspace.objects.filter(owner=self.request.user)
+
+    def get_success_url(self):
+        return reverse('workspace_detail', kwargs={'pk': self.object.pk})
 
 class WorkspaceDeleteView(LoginRequiredMixin, DeleteView):
     model = Workspace

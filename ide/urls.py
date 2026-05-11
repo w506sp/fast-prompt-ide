@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.WorkspaceListView.as_view(), name='workspace_list'),
     path('new/', views.WorkspaceCreateView.as_view(), name='workspace_create'),
     path('<int:pk>/', views.WorkspaceDetailView.as_view(), name='workspace_detail'),
+    path('<int:pk>/edit/', views.WorkspaceUpdateView.as_view(), name='workspace_edit'),
     path('<int:pk>/delete/', views.WorkspaceDeleteView.as_view(), name='workspace_delete'),
     path('<int:workspace_pk>/projects/new/', views.create_project, name='project_create'),
     path('projects/<int:pk>/delete/', views.ProjectDeleteView.as_view(), name='project_delete'),
