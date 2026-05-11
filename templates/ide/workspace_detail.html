@@ -16,7 +16,10 @@
 <p class="meta">your role: <strong>{{ user_role }}</strong>{% if is_owner %} (owner){% endif %}</p>
 
 {% if is_owner %}
-    <p><a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete workspace</a></p>
+    <p>
+        <a href="{% url 'workspace_edit' workspace.pk %}">edit workspace</a>
+        — <a href="{% url 'workspace_delete' workspace.pk %}" class="btn-danger">delete workspace</a>
+    </p>
 {% endif %}
 
 <h3>projects</h3>
