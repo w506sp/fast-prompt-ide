@@ -176,6 +176,20 @@ class PromptTemplateCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse('project_detail', kwargs={'pk': self.object.project.pk})
 
+class PromptTemplateDeleteView(LoginRequiredMixin, DeleteView):
+    model = PromptTemplate
+    template_name = 'ide/prompt_template_confirm_delete.html'
+
+    def get_queryset(self):
+        return PromptTemplate.objects.filter(
+            project__workspace__membership__user=self.request.user,
+            project__workspace__membership__role__in=['admin', 'member'],
+        ).distinct()
+
+    def get_success_url(self):
+        return reverse('project_detail', kwargs={'pk': self.object.project.pk})
+
+
 class PromptTemplateUpdateView(LoginRequiredMixin, UpdateView):
     model = PromptTemplate
     form_class = PromptTemplateForm

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>delete prompt template: {{ object.name }}</h2>
+<p class="error">are you sure? all {{ object.versions.count }} version{{ object.versions.count|pluralize }} and their executions will be deleted. this cannot be undone.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger">yes, delete template</button>
+    <a href="{% url 'prompt_template_detail' object.pk %}">no, cancel</a>
+</form>
+{% endblock %}

@@ -23,6 +23,8 @@
         <a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a>
         <span class="sep">·</span>
         <a href="{% url 'prompt_template_edit' prompt_template.pk %}">edit template</a>
+        <span class="sep">·</span>
+        <a href="{% url 'prompt_template_delete' prompt_template.pk %}" class="btn-danger">delete template</a>
     </p>
 {% endif %}
 
