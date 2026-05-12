@@ -19,7 +19,11 @@
 {% if prompt_template.description %}<p>{{ prompt_template.description }}</p>{% endif %}
 
 {% if can_manage %}
-    <p><a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a></p>
+    <p>
+        <a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a>
+        <span class="sep">·</span>
+        <a href="{% url 'prompt_template_edit' prompt_template.pk %}">edit template</a>
+    </p>
 {% endif %}
 
 <h3>versions</h3>
