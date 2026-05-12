@@ -74,6 +74,26 @@ class WorkspaceDeleteView(LoginRequiredMixin, DeleteView):
         # Only owner can delete workspace
         return Workspace.objects.filter(owner=self.request.user)
 
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+    model = Project
+    form_class = ProjectForm
+    template_name = 'ide/project_form.html'
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            workspace__membership__user=self.request.user,
+            workspace__membership__role__in=['admin', 'member'],
+        ).distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['workspace'] = self.object.workspace
+        return context
+
+    def get_success_url(self):
+        return reverse('project_detail', kwargs={'pk': self.object.pk})
+
+
 class ProjectDeleteView(LoginRequiredMixin, DeleteView):
     model = Project
     template_name = 'ide/project_confirm_delete.html'
