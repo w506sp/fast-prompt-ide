@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution
-from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, RunPromptForm
+from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, RunPromptForm, VariableFormSet
 from . import ollama_client
 from .utils import render_prompt
 from django.contrib import messages
@@ -269,6 +269,35 @@ def _get_runnable_version(user, version_pk):
         pk=version_pk,
         template__project__workspace__members=user,
     )
+
+
+@login_required
+def edit_variables(request, version_pk):
+    version = get_object_or_404(
+        PromptVersion,
+        pk=version_pk,
+        template__project__workspace__members=request.user,
+    )
+    membership = get_object_or_404(
+        Membership,
+        workspace=version.template.project.workspace,
+        user=request.user,
+    )
+    if membership.role not in ['admin', 'member']:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        formset = VariableFormSet(request.POST, instance=version)
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, "Variables updated.")
+            return redirect('prompt_template_detail', pk=version.template.pk)
+    else:
+        formset = VariableFormSet(instance=version)
+    return render(request, 'ide/variable_formset.html', {
+        'formset': formset,
+        'version': version,
+    })
 
 
 @login_required

@@ -1,5 +1,6 @@
 from django import forms
-from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion
+from django.forms import inlineformset_factory
+from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable
 from django.contrib.auth.models import User
 from . import ollama_client
 
@@ -46,6 +47,19 @@ class PromptVersionForm(forms.ModelForm):
                 choices=[(m, m) for m in models],
                 help_text="Models discovered on the local Ollama server.",
             )
+
+
+VariableFormSet = inlineformset_factory(
+    PromptVersion,
+    Variable,
+    fields=['name', 'description', 'default_value'],
+    extra=0,
+    can_delete=False,
+    widgets={
+        'description': forms.TextInput(),
+        'default_value': forms.Textarea(attrs={'rows': 2}),
+    },
+)
 
 
 class RunPromptForm(forms.Form):
