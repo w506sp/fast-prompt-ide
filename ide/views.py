@@ -248,6 +248,20 @@ def create_prompt_version(request, template_pk):
         'ollama_models': _ollama_models_or_none(),
     })
 
+class PromptVersionDeleteView(LoginRequiredMixin, DeleteView):
+    model = PromptVersion
+    template_name = 'ide/prompt_version_confirm_delete.html'
+
+    def get_queryset(self):
+        return PromptVersion.objects.filter(
+            template__project__workspace__membership__user=self.request.user,
+            template__project__workspace__membership__role__in=['admin', 'member'],
+        ).distinct()
+
+    def get_success_url(self):
+        return reverse('prompt_template_detail', kwargs={'pk': self.object.template.pk})
+
+
 def _get_runnable_version(user, version_pk):
     """Return a PromptVersion the user is allowed to run, or 404."""
     return get_object_or_404(

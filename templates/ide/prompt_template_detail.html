@@ -41,6 +41,10 @@
             <a href="{% url 'prompt_version_run' version.pk %}">run &rarr;</a>
             <span class="sep">·</span>
             <a href="{% url 'execution_list' version.pk %}">history ({{ version.executions.count }})</a>
+            {% if can_manage %}
+                <span class="sep">·</span>
+                <a href="{% url 'prompt_version_delete' version.pk %}" class="btn-danger">delete</a>
+            {% endif %}
             <br>
             <span class="meta">{{ version.created_at|date:"Y-m-d H:i" }}</span>
             {% if version.variables.all %}

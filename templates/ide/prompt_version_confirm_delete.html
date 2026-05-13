@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>delete version v{{ object.version_number }} of {{ object.template.name }}</h2>
+<p class="error">are you sure? {{ object.executions.count }} execution{{ object.executions.count|pluralize }} attached to this version will also be deleted. this cannot be undone.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger">yes, delete version</button>
+    <a href="{% url 'prompt_template_detail' object.template.pk %}">no, cancel</a>
+</form>
+{% endblock %}
