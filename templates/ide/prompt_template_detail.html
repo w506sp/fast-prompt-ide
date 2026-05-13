@@ -49,6 +49,10 @@
             <span class="meta">{{ version.created_at|date:"Y-m-d H:i" }}</span>
             {% if version.variables.all %}
                 <br><span class="meta">vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                {% if can_manage %}
+                    <span class="sep">·</span>
+                    <a href="{% url 'edit_variables' version.pk %}">edit variables</a>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}
