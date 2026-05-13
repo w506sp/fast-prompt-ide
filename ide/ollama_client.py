@@ -48,6 +48,43 @@ def list_models():
     return [m.get('name', '') for m in data.get('models', []) if m.get('name')]
 
 
+def generate_stream(model, prompt, options=None, timeout=None):
+    """Stream a completion from Ollama. Yields dicts as Ollama emits them.
+
+    Each yielded dict has 'response' (a chunk of text) and 'done' (bool). The
+    final dict (done=True) carries 'eval_count', 'prompt_eval_count', etc.
+    Raises OllamaError on transport failure.
+    """
+    payload = {'model': model, 'prompt': prompt, 'stream': True}
+    if options:
+        payload['options'] = options
+    url = f"{_base_url()}/api/generate"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        method='POST',
+        headers={'Content-Type': 'application/json'},
+    )
+    timeout = timeout if timeout is not None else getattr(settings, 'OLLAMA_TIMEOUT', 120)
+    try:
+        resp = urllib.request.urlopen(req, timeout=timeout)
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode('utf-8', errors='replace') if exc.fp else ''
+        raise OllamaError(f"Ollama returned HTTP {exc.code}: {body or exc.reason}") from exc
+    except urllib.error.URLError as exc:
+        raise OllamaError(f"Could not reach Ollama at {_base_url()}: {exc.reason}") from exc
+    with resp:
+        for raw in resp:
+            line = raw.decode('utf-8', errors='replace').strip()
+            if not line:
+                continue
+            try:
+                yield json.loads(line)
+            except json.JSONDecodeError:
+                # Ollama emits one JSON object per line — skip garbage rather than abort.
+                continue
+
+
 def generate(model, prompt, options=None, timeout=None):
     """Run a non-streaming completion. Returns the full response dict from Ollama.
 
