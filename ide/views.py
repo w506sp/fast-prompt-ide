@@ -356,6 +356,26 @@ def add_member(request, workspace_pk):
     return redirect('workspace_detail', pk=workspace.pk)
 
 @login_required
+def change_member_role(request, workspace_pk, user_id):
+    # Only owner can change roles
+    workspace = get_object_or_404(Workspace, pk=workspace_pk, owner=request.user)
+    membership = get_object_or_404(Membership, workspace=workspace, user_id=user_id)
+    if membership.user == workspace.owner:
+        messages.error(request, "Cannot change the owner's role.")
+        return redirect('workspace_detail', pk=workspace.pk)
+    if request.method == 'POST':
+        new_role = request.POST.get('role')
+        valid_roles = {choice[0] for choice in Membership.ROLE_CHOICES}
+        if new_role in valid_roles:
+            membership.role = new_role
+            membership.save()
+            messages.success(request, f"{membership.user.username} is now {new_role}.")
+        else:
+            messages.error(request, "Invalid role.")
+    return redirect('workspace_detail', pk=workspace.pk)
+
+
+@login_required
 def remove_member(request, workspace_pk, user_id):
     # Only owner can remove members
     workspace = get_object_or_404(Workspace, pk=workspace_pk, owner=request.user)

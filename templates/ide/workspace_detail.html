@@ -52,6 +52,15 @@
         {% if membership.user == workspace.owner %}
             <span class="meta">— owner</span>
         {% elif is_owner %}
+            — <form method="post" action="{% url 'change_member_role' workspace.pk membership.user.id %}" style="display:inline;">
+                {% csrf_token %}
+                <select name="role">
+                    <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>admin</option>
+                    <option value="member" {% if membership.role == 'member' %}selected{% endif %}>member</option>
+                    <option value="viewer" {% if membership.role == 'viewer' %}selected{% endif %}>viewer</option>
+                </select>
+                <button type="submit">change role</button>
+            </form>
             — <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn-danger">remove</button>
