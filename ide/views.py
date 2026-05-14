@@ -1,6 +1,7 @@
 import time
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import StreamingHttpResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
@@ -341,6 +342,86 @@ def run_prompt_version(request, version_pk):
         'form': form,
         'version': version,
     })
+
+
+@login_required
+def start_streaming_run(request, version_pk):
+    """POST handler: validate run form, create pending Execution, return partial
+    containing the SSE container that will subscribe to execution_stream."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest("POST required")
+    version = _get_runnable_version(request.user, version_pk)
+    variables = list(version.variables.all())
+    form = RunPromptForm(request.POST, variables=variables)
+    if not form.is_valid():
+        return render(request, 'ide/prompt_version_run.html', {
+            'form': form, 'version': version,
+        })
+    values = form.variable_values()
+    execution = Execution.objects.create(
+        version=version,
+        user=request.user,
+        input_data=values,
+        status='pending',
+    )
+    return render(request, 'ide/_execution_stream.html', {'execution': execution})
+
+
+@login_required
+def execution_stream(request, pk):
+    """SSE endpoint: runs Ollama, emits text chunks, finalizes the Execution."""
+    execution = get_object_or_404(
+        Execution,
+        pk=pk,
+        version__template__project__workspace__members=request.user,
+    )
+
+    def event_stream():
+        if execution.status != 'pending':
+            yield f"event: done\ndata: {execution.pk}\n\n"
+            return
+        version = execution.version
+        rendered = render_prompt(version.content, execution.input_data or {})
+        execution.status = 'streaming'
+        execution.save(update_fields=['status'])
+        started = time.monotonic()
+        buffer = []
+        last_chunk = None
+        try:
+            for chunk in ollama_client.generate_stream(
+                version.model_name,
+                rendered,
+                options=version.model_config or None,
+            ):
+                text = chunk.get('response', '')
+                if text:
+                    buffer.append(text)
+                    # SSE: each "data:" line is one message. Newlines inside payload
+                    # must be re-emitted as additional data: lines per SSE spec.
+                    for sub in text.split('\n'):
+                        yield f"data: {sub}\ndata: \n"
+                    yield "\n"
+                last_chunk = chunk
+                if chunk.get('done'):
+                    break
+            execution.output_text = ''.join(buffer)
+            execution.token_usage = {
+                'prompt_eval_count': (last_chunk or {}).get('prompt_eval_count'),
+                'eval_count': (last_chunk or {}).get('eval_count'),
+            }
+            execution.status = 'success'
+        except ollama_client.OllamaError as exc:
+            execution.status = 'error'
+            execution.error_message = str(exc)
+            yield f"event: error\ndata: {exc}\n\n"
+        execution.latency_ms = int((time.monotonic() - started) * 1000)
+        execution.save()
+        yield f"event: done\ndata: {execution.pk}\n\n"
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
 
 
 class ExecutionDetailView(LoginRequiredMixin, DetailView):

@@ -22,6 +22,8 @@ urlpatterns = [
     path('versions/<int:pk>/delete/', views.PromptVersionDeleteView.as_view(), name='prompt_version_delete'),
     path('versions/<int:version_pk>/variables/', views.edit_variables, name='edit_variables'),
     path('versions/<int:version_pk>/run/', views.run_prompt_version, name='prompt_version_run'),
+    path('versions/<int:version_pk>/run/stream/', views.start_streaming_run, name='prompt_version_run_stream'),
+    path('executions/<int:pk>/stream/', views.execution_stream, name='execution_stream'),
     path('versions/<int:version_pk>/executions/', views.ExecutionListView.as_view(), name='execution_list'),
     path('executions/<int:pk>/', views.ExecutionDetailView.as_view(), name='execution_detail'),
 ]

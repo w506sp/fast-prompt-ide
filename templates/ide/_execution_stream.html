@@ -1,0 +1,22 @@
+{# Partial returned after starting a streaming run. Subscribes to the SSE feed
+   that streams Ollama output, then swaps in a link to the finished execution
+   once the 'done' event fires. #}
+<div id="stream-wrap"
+     hx-ext="sse"
+     sse-connect="{% url 'execution_stream' execution.pk %}"
+     sse-swap="message"
+     hx-swap="beforeend"
+     hx-target="#stream-output">
+    <p class="meta">streaming from <code>{{ execution.version.model_name }}</code>…</p>
+    <pre class="prompt-block" id="stream-output"></pre>
+    <div hx-trigger="sse:done"
+         hx-get="{% url 'execution_detail' execution.pk %}"
+         hx-target="#stream-wrap"
+         hx-swap="outerHTML"
+         hx-select="#execution-body"></div>
+    <div hx-trigger="sse:error"
+         hx-get="{% url 'execution_detail' execution.pk %}"
+         hx-target="#stream-wrap"
+         hx-swap="outerHTML"
+         hx-select="#execution-body"></div>
+</div>
