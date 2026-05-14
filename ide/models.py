@@ -53,6 +53,8 @@ class PromptVersion(models.Model):
 
 class Execution(models.Model):
     STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('streaming', 'Streaming'),
         ('success', 'Success'),
         ('error', 'Error'),
         ('timeout', 'Timeout'),
@@ -63,7 +65,7 @@ class Execution(models.Model):
     output_text = models.TextField(blank=True)
     latency_ms = models.IntegerField(null=True, blank=True)
     token_usage = models.JSONField(default=dict, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='success')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     error_message = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
