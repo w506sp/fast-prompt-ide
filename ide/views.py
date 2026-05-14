@@ -396,11 +396,10 @@ def execution_stream(request, pk):
                 text = chunk.get('response', '')
                 if text:
                     buffer.append(text)
-                    # SSE: each "data:" line is one message. Newlines inside payload
-                    # must be re-emitted as additional data: lines per SSE spec.
-                    for sub in text.split('\n'):
-                        yield f"data: {sub}\ndata: \n"
-                    yield "\n"
+                    # SSE: a single event with one data: line per text line;
+                    # the browser rejoins them with '\n'.
+                    payload = '\n'.join(f"data: {line}" for line in text.split('\n'))
+                    yield payload + "\n\n"
                 last_chunk = chunk
                 if chunk.get('done'):
                     break
