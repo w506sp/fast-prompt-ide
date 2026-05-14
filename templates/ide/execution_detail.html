@@ -19,6 +19,7 @@
 {% endblock %}
 
 {% block content %}
+<div id="execution-body">
 <h2>execution #{{ execution.pk }}</h2>
 <p>
     <strong>{{ execution.version.template.name }}</strong> v{{ execution.version.version_number }}
@@ -52,4 +53,5 @@
 {% endif %}
 
 <p><a href="{% url 'prompt_version_run' execution.version.pk %}">run again &rarr;</a></p>
+</div>
 {% endblock %}

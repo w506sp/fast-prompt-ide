@@ -24,7 +24,10 @@
 <pre class="prompt-block">{{ version.content }}</pre>
 
 <h3>inputs</h3>
-<form method="post">
+<form method="post"
+      hx-post="{% url 'prompt_version_run_stream' version.pk %}"
+      hx-target="#run-result"
+      hx-swap="innerHTML">
     {% csrf_token %}
     {% if form.fields %}
         {{ form.as_p }}
@@ -33,4 +36,9 @@
     {% endif %}
     <button type="submit">run &rarr;</button>
 </form>
+
+<h3>output</h3>
+<div id="run-result">
+    <p class="muted">submit the form to start a streamed run.</p>
+</div>
 {% endblock %}
