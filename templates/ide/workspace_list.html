@@ -6,6 +6,12 @@
 <h2>my workspaces</h2>
 <p><a href="{% url 'workspace_create' %}">+ new workspace</a></p>
 
+<form method="get" style="margin-bottom:15px;">
+    <input type="text" name="q" value="{{ q }}" placeholder="search by name…" style="max-width:280px;">
+    <button type="submit">search</button>
+    {% if q %}<a href="{% url 'workspace_list' %}">clear</a>{% endif %}
+</form>
+
 {% if workspaces %}
     <ul class="cards">
     {% for workspace in workspaces %}
@@ -20,8 +26,12 @@
     {% endfor %}
     </ul>
 {% else %}
-    <p class="muted">you are not a member of any workspaces yet.</p>
-    <p><a href="{% url 'workspace_create' %}">create your first workspace &rarr;</a> — every project, prompt, and run lives inside one.</p>
+    {% if q %}
+        <p class="muted">no workspaces match "{{ q }}". <a href="{% url 'workspace_list' %}">clear search</a>.</p>
+    {% else %}
+        <p class="muted">you are not a member of any workspaces yet.</p>
+        <p><a href="{% url 'workspace_create' %}">create your first workspace &rarr;</a> — every project, prompt, and run lives inside one.</p>
+    {% endif %}
 {% endif %}
 
 {% if user.is_authenticated and not user.is_superuser %}

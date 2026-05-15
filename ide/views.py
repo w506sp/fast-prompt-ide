@@ -20,7 +20,16 @@ class WorkspaceListView(LoginRequiredMixin, ListView):
     context_object_name = 'workspaces'
 
     def get_queryset(self):
-        return Workspace.objects.filter(members=self.request.user)
+        qs = Workspace.objects.filter(members=self.request.user)
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(name__icontains=q)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q', '').strip()
+        return context
 
 class WorkspaceCreateView(LoginRequiredMixin, CreateView):
     model = Workspace
