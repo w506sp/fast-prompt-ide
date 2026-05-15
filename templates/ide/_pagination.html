@@ -1,0 +1,7 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<p class="meta">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&larr; prev</a>{% endif %}
+    page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">next &rarr;</a>{% endif %}
+</p>
+{% endif %}

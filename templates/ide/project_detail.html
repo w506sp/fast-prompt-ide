@@ -41,4 +41,5 @@
 {% else %}
     <p class="muted">no prompt templates yet.{% if can_manage %} <a href="{% url 'prompt_template_create' project.pk %}">create the first one</a>.{% endif %}</p>
 {% endif %}
+{% include 'ide/_pagination.html' %}
 {% endblock %}

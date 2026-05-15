@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
+from django.core.paginator import Paginator
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution
 from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, RunPromptForm, VariableFormSet
 from . import ollama_client
@@ -149,7 +150,11 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['templates'] = self.object.templates.all().order_by('-created_at')
+        templates_qs = self.object.templates.all().order_by('-created_at')
+        paginator = Paginator(templates_qs, 10)
+        page = paginator.get_page(self.request.GET.get('page'))
+        context['templates'] = page.object_list
+        context['page_obj'] = page
         membership = Membership.objects.get(user=self.request.user, workspace=self.object.workspace)
         context['can_manage'] = membership.role in ['admin', 'member']
         return context
@@ -226,7 +231,11 @@ class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['versions'] = self.object.versions.all()
+        versions_qs = self.object.versions.all()
+        paginator = Paginator(versions_qs, 10)
+        page = paginator.get_page(self.request.GET.get('page'))
+        context['versions'] = page.object_list
+        context['page_obj'] = page
         membership = Membership.objects.get(user=self.request.user, workspace=self.object.project.workspace)
         context['can_manage'] = membership.role in ['admin', 'member']
         return context

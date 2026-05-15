@@ -63,4 +63,5 @@
 {% else %}
     <p class="muted">no versions yet.{% if can_manage %} <a href="{% url 'prompt_version_create' prompt_template.pk %}">create the first one</a>.{% endif %}</p>
 {% endif %}
+{% include 'ide/_pagination.html' %}
 {% endblock %}
