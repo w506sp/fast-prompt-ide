@@ -1,3 +1,4 @@
+import difflib
 import time
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -341,6 +342,46 @@ def run_prompt_version(request, version_pk):
     return render(request, 'ide/prompt_version_run.html', {
         'form': form,
         'version': version,
+    })
+
+
+@login_required
+def compare_versions(request, template_pk):
+    template = get_object_or_404(
+        PromptTemplate,
+        pk=template_pk,
+        project__workspace__members=request.user,
+    )
+    versions = list(template.versions.all())
+    if len(versions) < 2:
+        messages.info(request, "Need at least two versions to compare.")
+        return redirect('prompt_template_detail', pk=template.pk)
+
+    def _pick(param, default):
+        try:
+            pk = int(request.GET.get(param, default))
+        except (TypeError, ValueError):
+            return default
+        return pk if any(v.pk == pk for v in versions) else default
+
+    left_pk = _pick('left', versions[1].pk)  # older
+    right_pk = _pick('right', versions[0].pk)  # newer
+    left = next(v for v in versions if v.pk == left_pk)
+    right = next(v for v in versions if v.pk == right_pk)
+
+    diff_lines = list(difflib.unified_diff(
+        left.content.splitlines(),
+        right.content.splitlines(),
+        fromfile=f"v{left.version_number}",
+        tofile=f"v{right.version_number}",
+        lineterm='',
+    ))
+    return render(request, 'ide/version_compare.html', {
+        'prompt_template': template,
+        'versions': versions,
+        'left': left,
+        'right': right,
+        'diff_lines': diff_lines,
     })
 
 

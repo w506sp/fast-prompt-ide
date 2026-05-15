@@ -19,6 +19,7 @@ urlpatterns = [
     path('templates/<int:pk>/edit/', views.PromptTemplateUpdateView.as_view(), name='prompt_template_edit'),
     path('templates/<int:pk>/delete/', views.PromptTemplateDeleteView.as_view(), name='prompt_template_delete'),
     path('templates/<int:template_pk>/versions/new/', views.create_prompt_version, name='prompt_version_create'),
+    path('templates/<int:template_pk>/compare/', views.compare_versions, name='compare_versions'),
     path('versions/<int:pk>/delete/', views.PromptVersionDeleteView.as_view(), name='prompt_version_delete'),
     path('versions/<int:version_pk>/variables/', views.edit_variables, name='edit_variables'),
     path('versions/<int:version_pk>/run/', views.run_prompt_version, name='prompt_version_run'),
