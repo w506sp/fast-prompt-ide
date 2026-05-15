@@ -29,6 +29,9 @@
 {% endif %}
 
 <h3>versions</h3>
+{% if versions|length > 1 %}
+    <p><a href="{% url 'compare_versions' prompt_template.pk %}">compare versions &rarr;</a></p>
+{% endif %}
 {% if versions %}
     <ul class="cards">
     {% for version in versions %}
