@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 .DS_Store
 GEMINI.md
+CLAUDE.md
+key.txt
+*.key
+*.pem
+.env
+.env.*
