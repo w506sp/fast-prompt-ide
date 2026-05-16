@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}edit v{{ version.version_number }} — {{ version.template.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<p class="breadcrumbs">
+    <a href="{% url 'workspace_list' %}">workspaces</a>
+    <span class="sep">/</span>
+    <a href="{% url 'workspace_detail' version.template.project.workspace.pk %}">{{ version.template.project.workspace.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'project_detail' version.template.project.pk %}">{{ version.template.project.name }}</a>
+    <span class="sep">/</span>
+    <a href="{% url 'prompt_template_detail' version.template.pk %}">{{ version.template.name }}</a>
+    <span class="sep">/</span>
+    <strong>edit v{{ version.version_number }}</strong>
+</p>
+{% endblock %}
+
+{% block content %}
+<h2>edit version v{{ version.version_number }}</h2>
+<p class="meta">model: <code>{{ version.model_name }}</code> · created {{ version.created_at|date:"Y-m-d H:i" }}</p>
+
+<h3>prompt content <span class="meta">(immutable — create a new version to change)</span></h3>
+<pre class="prompt-block">{{ version.content }}</pre>
+
+<form method="post">
+    {% csrf_token %}
+
+    <h3>commit message</h3>
+    {{ meta_form.commit_message }}
+    {% if meta_form.commit_message.errors %}<p class="error">{{ meta_form.commit_message.errors }}</p>{% endif %}
+
+    <h3>variables</h3>
+    {% if formset.total_form_count == 0 %}
+        <p class="muted">no variables — add <code>{% templatetag openvariable %}name{% templatetag closevariable %}</code> placeholders to the prompt and they'll appear here in the next version.</p>
+        {{ formset.management_form }}
+    {% else %}
+        {{ formset.management_form }}
+        <table class="cards">
+            <thead><tr><th>name</th><th>description</th><th>default value</th></tr></thead>
+            <tbody>
+            {% for form in formset %}
+                <tr>
+                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <td>{{ form.name }}</td>
+                    <td>{{ form.description }}</td>
+                    <td>{{ form.default_value }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if formset.non_form_errors %}<p class="error">{{ formset.non_form_errors }}</p>{% endif %}
+    {% endif %}
+
+    <p>
+        <button type="submit">save</button>
+        <a href="{% url 'prompt_template_detail' version.template.pk %}">cancel</a>
+    </p>
+</form>
+{% endblock %}

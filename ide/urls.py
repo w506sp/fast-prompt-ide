@@ -22,6 +22,7 @@ urlpatterns = [
     path('templates/<int:template_pk>/compare/', views.compare_versions, name='compare_versions'),
     path('versions/<int:pk>/delete/', views.PromptVersionDeleteView.as_view(), name='prompt_version_delete'),
     path('versions/<int:version_pk>/variables/', views.edit_variables, name='edit_variables'),
+    path('versions/<int:version_pk>/edit/', views.edit_prompt_version, name='prompt_version_edit'),
     path('versions/<int:version_pk>/run/', views.run_prompt_version, name='prompt_version_run'),
     path('versions/<int:version_pk>/run/stream/', views.start_streaming_run, name='prompt_version_run_stream'),
     path('executions/<int:pk>/stream/', views.execution_stream, name='execution_stream'),

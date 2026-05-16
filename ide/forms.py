@@ -49,6 +49,14 @@ class PromptVersionForm(forms.ModelForm):
             )
 
 
+class PromptVersionMetaForm(forms.ModelForm):
+    """Editable bits of an existing version — not the content (history is immutable)."""
+
+    class Meta:
+        model = PromptVersion
+        fields = ['commit_message']
+
+
 VariableFormSet = inlineformset_factory(
     PromptVersion,
     Variable,

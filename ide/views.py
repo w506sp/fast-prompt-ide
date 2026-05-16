@@ -9,7 +9,7 @@ from django.views.generic import ListView, DetailView, CreateView, DeleteView, U
 from django.urls import reverse_lazy, reverse
 from django.core.paginator import Paginator
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution
-from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, RunPromptForm, VariableFormSet
+from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, PromptVersionMetaForm, RunPromptForm, VariableFormSet
 from . import ollama_client
 from .utils import render_prompt
 from django.contrib import messages
@@ -296,6 +296,41 @@ def _get_runnable_version(user, version_pk):
         pk=version_pk,
         template__project__workspace__members=user,
     )
+
+
+@login_required
+def edit_prompt_version(request, version_pk):
+    """Combined editor for a saved version: commit message + variable metadata.
+    Version content is treated as immutable history."""
+    version = get_object_or_404(
+        PromptVersion,
+        pk=version_pk,
+        template__project__workspace__members=request.user,
+    )
+    membership = get_object_or_404(
+        Membership,
+        workspace=version.template.project.workspace,
+        user=request.user,
+    )
+    if membership.role not in ['admin', 'member']:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        meta_form = PromptVersionMetaForm(request.POST, instance=version)
+        formset = VariableFormSet(request.POST, instance=version)
+        if meta_form.is_valid() and formset.is_valid():
+            meta_form.save()
+            formset.save()
+            messages.success(request, "Version saved.")
+            return redirect('prompt_template_detail', pk=version.template.pk)
+    else:
+        meta_form = PromptVersionMetaForm(instance=version)
+        formset = VariableFormSet(instance=version)
+    return render(request, 'ide/prompt_version_edit.html', {
+        'version': version,
+        'meta_form': meta_form,
+        'formset': formset,
+    })
 
 
 @login_required
