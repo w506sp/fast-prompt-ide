@@ -48,7 +48,7 @@
             <span class="meta">· <code>{{ version.model_name }}</code>{% if version.commit_message %} · {{ version.commit_message }}{% endif %}</span>
             — <a href="{% url 'prompt_version_run' version.pk %}">run &rarr;</a>
             <details>
-                <summary class="meta">{{ version.created_at|date:"Y-m-d H:i" }} · <a href="{% url 'execution_list' version.pk %}">history ({{ version.executions.count }})</a>{% if can_manage %} · <a href="{% url 'prompt_version_delete' version.pk %}" class="btn-danger">delete</a>{% endif %}</summary>
+                <summary class="meta">{{ version.created_at|date:"Y-m-d H:i" }} · <a href="{% url 'execution_list' version.pk %}">history ({{ version.executions.count }})</a>{% if can_manage %} · <a href="{% url 'prompt_version_edit' version.pk %}">edit</a> · <a href="{% url 'prompt_version_delete' version.pk %}" class="btn-danger">delete</a>{% endif %}</summary>
                 {% if version.variables.all %}
                     <p class="meta">vars: {% for v in version.variables.all %}<code>{% templatetag openvariable %}{{ v.name }}{% templatetag closevariable %}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
                 {% endif %}

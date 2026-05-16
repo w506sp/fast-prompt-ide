@@ -265,8 +265,8 @@ def create_prompt_version(request, template_pk):
             from .utils import extract_variables
             for name in extract_variables(version.content):
                 Variable.objects.get_or_create(version=version, name=name)
-            messages.success(request, f"Version {version.version_number} saved.")
-            return redirect('prompt_template_detail', pk=template.pk)
+            messages.success(request, f"Version {version.version_number} saved — set variable defaults below.")
+            return redirect('prompt_version_edit', version_pk=version.pk)
     else:
         form = PromptVersionForm()
     return render(request, 'ide/prompt_version_form.html', {
@@ -330,35 +330,6 @@ def edit_prompt_version(request, version_pk):
         'version': version,
         'meta_form': meta_form,
         'formset': formset,
-    })
-
-
-@login_required
-def edit_variables(request, version_pk):
-    version = get_object_or_404(
-        PromptVersion,
-        pk=version_pk,
-        template__project__workspace__members=request.user,
-    )
-    membership = get_object_or_404(
-        Membership,
-        workspace=version.template.project.workspace,
-        user=request.user,
-    )
-    if membership.role not in ['admin', 'member']:
-        raise PermissionDenied
-
-    if request.method == 'POST':
-        formset = VariableFormSet(request.POST, instance=version)
-        if formset.is_valid():
-            formset.save()
-            messages.success(request, "Variables updated.")
-            return redirect('prompt_template_detail', pk=version.template.pk)
-    else:
-        formset = VariableFormSet(instance=version)
-    return render(request, 'ide/variable_formset.html', {
-        'formset': formset,
-        'version': version,
     })
 
 
