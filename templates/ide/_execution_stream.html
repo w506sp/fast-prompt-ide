@@ -7,7 +7,9 @@
      sse-swap="message"
      hx-swap="beforeend"
      hx-target="#stream-output">
-    <p class="meta">streaming from <code>{{ execution.version.model_name }}</code>…</p>
+    <p class="meta">streaming from <code>{{ execution.version.model_name }}</code>…
+        <button type="button" data-copy-target="#stream-output" class="copy-btn">copy</button>
+    </p>
     <pre class="prompt-block" id="stream-output"></pre>
     <div hx-trigger="sse:done"
          hx-get="{% url 'execution_detail' execution.pk %}"

@@ -36,8 +36,8 @@
 </p>
 
 {% if execution.status == 'success' %}
-    <h3>output</h3>
-    <pre class="prompt-block">{{ execution.output_text }}</pre>
+    <h3>output <button type="button" data-copy-target="#output-text" class="copy-btn">copy</button></h3>
+    <pre class="prompt-block" id="output-text">{{ execution.output_text }}</pre>
 {% else %}
     <h3>error</h3>
     <pre class="prompt-block error">{{ execution.error_message }}</pre>
