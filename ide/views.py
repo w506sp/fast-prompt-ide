@@ -236,6 +236,7 @@ class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
         page = paginator.get_page(self.request.GET.get('page'))
         context['versions'] = page.object_list
         context['page_obj'] = page
+        context['latest_version'] = versions_qs.first()
         membership = Membership.objects.get(user=self.request.user, workspace=self.object.project.workspace)
         context['can_manage'] = membership.role in ['admin', 'member']
         return context

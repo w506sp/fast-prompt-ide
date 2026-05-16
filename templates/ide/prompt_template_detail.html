@@ -18,6 +18,14 @@
 <h2>{{ prompt_template.name }}</h2>
 {% if prompt_template.description %}<p>{{ prompt_template.description }}</p>{% endif %}
 
+{% if latest_version %}
+    <p>
+        <a href="{% url 'prompt_version_run' latest_version.pk %}"><strong>run latest (v{{ latest_version.version_number }}) &rarr;</strong></a>
+        <span class="meta">— <code>{{ latest_version.model_name }}</code>{% if latest_version.commit_message %} — {{ latest_version.commit_message }}{% endif %}</span>
+    </p>
+    <pre class="prompt-block">{{ latest_version.content }}</pre>
+{% endif %}
+
 {% if can_manage %}
     <p>
         <a href="{% url 'prompt_version_create' prompt_template.pk %}">+ new version</a>
