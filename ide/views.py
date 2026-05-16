@@ -150,7 +150,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        templates_qs = self.object.templates.all().order_by('-created_at')
+        templates_qs = self.object.templates.all().order_by('-created_at').prefetch_related('versions')
         paginator = Paginator(templates_qs, 10)
         page = paginator.get_page(self.request.GET.get('page'))
         context['templates'] = page.object_list
