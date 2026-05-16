@@ -28,9 +28,52 @@
         </li>
     </ul>
 {% endif %}
-<form method="post">
+<form method="post" id="version-form">
     {% csrf_token %}
     {% include 'ide/_form.html' %}
     <button type="submit">save version</button>
 </form>
+
+<h3>live preview</h3>
+<p class="meta">detected variables: <span id="var-chips" class="muted">(none yet)</span></p>
+<pre class="prompt-block" id="content-preview" style="min-height:60px;"></pre>
+
+<script>
+    (function () {
+        const textarea = document.getElementById('id_content');
+        const chips = document.getElementById('var-chips');
+        const preview = document.getElementById('content-preview');
+        if (!textarea) return;
+
+        const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => (
+            {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]
+        ));
+
+        function update() {
+            const raw = textarea.value;
+            const seen = new Set();
+            const re = /\{\{(\w+)\}\}/g;
+            let m;
+            while ((m = re.exec(raw)) !== null) seen.add(m[1]);
+
+            if (seen.size === 0) {
+                chips.className = 'muted';
+                chips.textContent = '(none yet)';
+            } else {
+                chips.className = '';
+                chips.innerHTML = [...seen].map(
+                    (n) => `<code style="background:#fff3a0;padding:0 4px;margin-right:6px;">${escapeHtml(n)}</code>`
+                ).join('');
+            }
+
+            preview.innerHTML = escapeHtml(raw).replace(
+                /\{\{(\w+)\}\}/g,
+                '<mark style="background:#fff3a0;padding:0 2px;">{{$1}}</mark>'
+            );
+        }
+
+        textarea.addEventListener('input', update);
+        update();
+    })();
+</script>
 {% endblock %}
