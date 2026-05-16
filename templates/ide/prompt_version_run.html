@@ -24,7 +24,7 @@
 <pre class="prompt-block">{{ version.content }}</pre>
 
 <h3>inputs</h3>
-<form method="post"
+<form id="run-form" method="post"
       hx-post="{% url 'prompt_version_run_stream' version.pk %}"
       hx-target="#run-result"
       hx-swap="innerHTML">
@@ -35,7 +35,16 @@
         <p class="muted">this version has no variables — submit to run as-is.</p>
     {% endif %}
     <button type="submit">run &rarr;</button>
+    <span class="meta">(or press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> in any field)</span>
 </form>
+<script>
+    document.getElementById('run-form').addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            htmx.trigger(this, 'submit');
+        }
+    });
+</script>
 
 <h3>output</h3>
 <div id="run-result">
