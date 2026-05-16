@@ -36,8 +36,33 @@
 </p>
 
 {% if execution.status == 'success' %}
-    <h3>output <button type="button" data-copy-target="#output-text" class="copy-btn">copy</button></h3>
+    <h3>output
+        <button type="button" data-copy-target="#output-text" class="copy-btn">copy</button>
+        <button type="button" id="md-toggle" class="copy-btn">render markdown</button>
+    </h3>
     <pre class="prompt-block" id="output-text">{{ execution.output_text }}</pre>
+    <div id="output-rendered" style="display:none;"></div>
+    <script>
+        (function () {
+            const raw = document.getElementById('output-text');
+            const rendered = document.getElementById('output-rendered');
+            const btn = document.getElementById('md-toggle');
+            let on = false;
+            btn.addEventListener('click', function () {
+                on = !on;
+                if (on) {
+                    rendered.innerHTML = window.tinyMarkdown(raw.textContent);
+                    raw.style.display = 'none';
+                    rendered.style.display = '';
+                    btn.textContent = 'show raw';
+                } else {
+                    raw.style.display = '';
+                    rendered.style.display = 'none';
+                    btn.textContent = 'render markdown';
+                }
+            });
+        })();
+    </script>
 {% else %}
     <h3>error</h3>
     <pre class="prompt-block error">{{ execution.error_message }}</pre>
