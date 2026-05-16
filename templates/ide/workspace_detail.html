@@ -48,22 +48,23 @@
 {% for membership in memberships %}
     <li>
         <strong>{{ membership.user.username }}</strong>
-        <span class="meta">({{ membership.role }})</span>
         {% if membership.user == workspace.owner %}
             <span class="meta">— owner</span>
-        {% elif is_owner %}
-            — <form method="post" action="{% url 'change_member_role' workspace.pk membership.user.id %}" style="display:inline;">
+        {% elif not is_owner %}
+            <span class="meta">— {{ membership.role }}</span>
+        {% endif %}
+        {% if membership.user != workspace.owner and is_owner %}
+            <form method="post" action="{% url 'change_member_role' workspace.pk membership.user.id %}" style="display:inline; margin-left:8px;">
                 {% csrf_token %}
-                <select name="role">
+                <select name="role" onchange="this.form.submit()">
                     <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>admin</option>
                     <option value="member" {% if membership.role == 'member' %}selected{% endif %}>member</option>
                     <option value="viewer" {% if membership.role == 'viewer' %}selected{% endif %}>viewer</option>
                 </select>
-                <button type="submit">change role</button>
             </form>
-            — <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
+            <form method="post" action="{% url 'remove_member' workspace.pk membership.user.id %}" style="display:inline;">
                 {% csrf_token %}
-                <button type="submit" class="btn-danger">remove</button>
+                <button type="submit" class="btn-danger" title="remove">×</button>
             </form>
         {% endif %}
     </li>
