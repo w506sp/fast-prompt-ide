@@ -30,6 +30,12 @@ class WorkspaceListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get('q', '').strip()
+        context['recent_executions'] = (
+            Execution.objects
+            .filter(version__template__project__workspace__members=self.request.user)
+            .select_related('version__template__project__workspace')
+            .order_by('-created_at')[:5]
+        )
         return context
 
 class WorkspaceCreateView(LoginRequiredMixin, CreateView):

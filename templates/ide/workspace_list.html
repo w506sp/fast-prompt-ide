@@ -3,6 +3,21 @@
 {% block title %}workspaces — fast-prompt-ide{% endblock %}
 
 {% block content %}
+{% if recent_executions %}
+<h2>recent runs</h2>
+<ul class="cards">
+    {% for ex in recent_executions %}
+        <li>
+            <a href="{% url 'execution_detail' ex.pk %}"><strong>#{{ ex.pk }}</strong></a>
+            <span class="meta">— {{ ex.version.template.name }} v{{ ex.version.version_number }} · {{ ex.status }} · {{ ex.created_at|date:"Y-m-d H:i" }}</span>
+            <br>
+            <span class="muted">{{ ex.version.template.project.workspace.name }} / {{ ex.version.template.project.name }}</span>
+            — <a href="{% url 'prompt_version_run' ex.version.pk %}">run again &rarr;</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 <h2>my workspaces</h2>
 <p><a href="{% url 'workspace_create' %}">+ new workspace</a></p>
 
