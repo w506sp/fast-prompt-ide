@@ -30,7 +30,7 @@
 {% endif %}
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% include 'ide/_form.html' %}
     <button type="submit">save version</button>
 </form>
 {% endblock %}

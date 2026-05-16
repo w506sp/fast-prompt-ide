@@ -6,7 +6,7 @@
 <h2>{% if object %}edit prompt template{% else %}new prompt template{% endif %}</h2>
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% include 'ide/_form.html' %}
     <button type="submit">{% if object %}save changes{% else %}create template{% endif %}</button>
 </form>
 <hr>
