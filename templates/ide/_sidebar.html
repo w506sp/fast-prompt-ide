@@ -9,10 +9,19 @@
             <details class="ws-node" open>
                 <summary>
                     <strong>{{ workspace.name }}</strong>
+                    <span class="node-actions">
+                        <a href="{% url 'project_create' workspace.pk %}" title="new project">+ project</a>
+                        <a href="{% url 'workspace_detail' workspace.pk %}" title="workspace settings &amp; members">⚙</a>
+                    </span>
                 </summary>
                 {% for project in workspace.projects.all %}
                     <details class="proj-node" open>
-                        <summary><span class="muted">▸</span> {{ project.name }}</summary>
+                        <summary>
+                            <span class="muted">▸</span> {{ project.name }}
+                            <span class="node-actions">
+                                <a href="{% url 'prompt_template_create' project.pk %}" title="new template">+ template</a>
+                            </span>
+                        </summary>
                         <ul class="tmpl-list">
                             {% for tmpl in project.templates.all %}
                                 <li>
@@ -27,12 +36,18 @@
                                     </a>
                                 </li>
                             {% empty %}
-                                <li class="muted">no templates</li>
+                                <li class="muted">
+                                    no templates —
+                                    <a href="{% url 'prompt_template_create' project.pk %}">create one</a>
+                                </li>
                             {% endfor %}
                         </ul>
                     </details>
                 {% empty %}
-                    <p class="muted sidebar-empty">no projects</p>
+                    <p class="muted sidebar-empty">
+                        no projects —
+                        <a href="{% url 'project_create' workspace.pk %}">create one</a>
+                    </p>
                 {% endfor %}
             </details>
         {% endfor %}
