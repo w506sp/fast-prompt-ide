@@ -22,63 +22,19 @@ def _build_version(owner, content="hello {{name}}", model="llama3"):
     return version
 
 
-class RunPromptVersionTests(TestCase):
+class RunRedirectTests(TestCase):
+    """The legacy /versions/<pk>/run/ endpoint now redirects into the IDE shell."""
+
     def setUp(self):
         self.user = User.objects.create_user("alice", password="pw")
-        self.outsider = User.objects.create_user("bob", password="pw")
         self.version = _build_version(self.user)
         self.client.login(username="alice", password="pw")
 
-    def test_get_renders_form_with_variable_field(self):
+    def test_redirects_to_shell_with_template_and_version(self):
         resp = self.client.get(reverse("prompt_version_run", args=[self.version.pk]))
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "var_name")
-
-    def test_outsider_cannot_run(self):
-        self.client.logout()
-        self.client.login(username="bob", password="pw")
-        resp = self.client.post(
-            reverse("prompt_version_run", args=[self.version.pk]),
-            {"var_name": "ada"},
-        )
-        self.assertEqual(resp.status_code, 404)
-        self.assertEqual(Execution.objects.count(), 0)
-
-    def test_post_creates_execution_on_success(self):
-        fake = {"response": "hi ada", "prompt_eval_count": 4, "eval_count": 7}
-        with patch("ide.views.ollama_client.generate", return_value=fake) as mock_gen:
-            resp = self.client.post(
-                reverse("prompt_version_run", args=[self.version.pk]),
-                {"var_name": "ada"},
-            )
-
-        execution = Execution.objects.get()
-        self.assertEqual(execution.status, "success")
-        self.assertEqual(execution.output_text, "hi ada")
-        self.assertEqual(execution.input_data, {"name": "ada"})
-        self.assertEqual(execution.token_usage, {"prompt_eval_count": 4, "eval_count": 7})
-        self.assertIsNotNone(execution.latency_ms)
-        self.assertEqual(execution.user, self.user)
-        # Ollama was called with the rendered prompt
-        args, kwargs = mock_gen.call_args
-        self.assertEqual(args[0], "llama3")
-        self.assertEqual(args[1], "hello ada")
-        self.assertRedirects(resp, reverse("execution_detail", args=[execution.pk]))
-
-    def test_post_records_error_when_ollama_fails(self):
-        with patch(
-            "ide.views.ollama_client.generate",
-            side_effect=ollama_client.OllamaError("boom"),
-        ):
-            self.client.post(
-                reverse("prompt_version_run", args=[self.version.pk]),
-                {"var_name": "ada"},
-            )
-
-        execution = Execution.objects.get()
-        self.assertEqual(execution.status, "error")
-        self.assertEqual(execution.error_message, "boom")
-        self.assertEqual(execution.output_text, "")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(f"t={self.version.template.pk}", resp.url)
+        self.assertIn(f"v={self.version.pk}", resp.url)
 
 
 class ExecutionViewsTests(TestCase):

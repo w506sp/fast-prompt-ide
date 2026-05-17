@@ -422,45 +422,9 @@ def edit_prompt_version(request, version_pk):
 
 @login_required
 def run_prompt_version(request, version_pk):
+    """Superseded by run panel in the IDE shell. Deep-link redirect."""
     version = _get_runnable_version(request.user, version_pk)
-    variables = list(version.variables.all())
-
-    if request.method == 'POST':
-        form = RunPromptForm(request.POST, variables=variables)
-        if form.is_valid():
-            values = form.variable_values()
-            rendered = render_prompt(version.content, values)
-            started = time.monotonic()
-            execution = Execution(
-                version=version,
-                user=request.user,
-                input_data=values,
-            )
-            try:
-                response = ollama_client.generate(
-                    version.model_name,
-                    rendered,
-                    options=version.model_config or None,
-                )
-                execution.output_text = response.get('response', '')
-                execution.token_usage = {
-                    'prompt_eval_count': response.get('prompt_eval_count'),
-                    'eval_count': response.get('eval_count'),
-                }
-                execution.status = 'success'
-            except ollama_client.OllamaError as exc:
-                execution.status = 'error'
-                execution.error_message = str(exc)
-            execution.latency_ms = int((time.monotonic() - started) * 1000)
-            execution.save()
-            return redirect('execution_detail', pk=execution.pk)
-    else:
-        form = RunPromptForm(variables=variables)
-
-    return render(request, 'ide/prompt_version_run.html', {
-        'form': form,
-        'version': version,
-    })
+    return redirect(f"{reverse('ide_shell')}?t={version.template.pk}&v={version.pk}")
 
 
 @login_required
