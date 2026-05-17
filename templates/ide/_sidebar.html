@@ -1,5 +1,16 @@
 {# Sidebar partial: workspace > project > template tree, recent runs at bottom. #}
 <div class="sidebar-section">
+    <a href="#"
+       class="dash-link {% if not selected_template_id %}is-selected{% endif %}"
+       hx-get="{% url 'ide_editor_partial' %}"
+       hx-target="#editor"
+       hx-swap="innerHTML"
+       hx-push-url="/ide/">
+        ★ dashboard
+    </a>
+</div>
+
+<div class="sidebar-section">
     <div class="sidebar-head">
         workspaces
         <a href="{% url 'workspace_create' %}" class="sidebar-action" title="new workspace">+</a>

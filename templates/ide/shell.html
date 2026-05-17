@@ -103,10 +103,10 @@
         <div class="ide-empty">loading…</div>
     </aside>
     <section class="ide-pane ide-editor" id="editor"
-             {% if request.GET.t %}hx-get="{% url 'ide_editor_partial' %}?t={{ request.GET.t }}{% if request.GET.v %}&v={{ request.GET.v }}{% endif %}"
+             hx-get="{% url 'ide_editor_partial' %}{% if request.GET.t %}?t={{ request.GET.t }}{% if request.GET.v %}&v={{ request.GET.v }}{% endif %}{% endif %}"
              hx-trigger="load"
-             hx-swap="innerHTML"{% endif %}>
-        <div class="ide-empty">select a template from the sidebar to start.</div>
+             hx-swap="innerHTML">
+        <div class="ide-empty">loading…</div>
     </section>
     <aside class="ide-pane ide-run" id="run-panel">
         <div class="ide-empty">no template selected.</div>
