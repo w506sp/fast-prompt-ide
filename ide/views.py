@@ -137,28 +137,13 @@ def _safe_int(value):
         return None
 
 
-class WorkspaceListView(LoginRequiredMixin, ListView):
-    model = Workspace
-    template_name = 'ide/workspace_list.html'
-    context_object_name = 'workspaces'
+@login_required
+def workspace_list_redirect(request):
+    """Superseded by the IDE shell sidebar; bounce there."""
+    return redirect('ide_shell')
 
-    def get_queryset(self):
-        qs = Workspace.objects.filter(members=self.request.user)
-        q = self.request.GET.get('q', '').strip()
-        if q:
-            qs = qs.filter(name__icontains=q)
-        return qs
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['q'] = self.request.GET.get('q', '').strip()
-        context['recent_executions'] = (
-            Execution.objects
-            .filter(version__template__project__workspace__members=self.request.user)
-            .select_related('version__template__project__workspace')
-            .order_by('-created_at')[:5]
-        )
-        return context
+WorkspaceListView = workspace_list_redirect  # keep import-time symbol for urls.py
 
 class WorkspaceCreateView(LoginRequiredMixin, CreateView):
     model = Workspace
@@ -269,23 +254,14 @@ def create_project(request, workspace_pk):
         form = ProjectForm()
     return render(request, 'ide/project_form.html', {'form': form, 'workspace': workspace})
 
-class ProjectDetailView(LoginRequiredMixin, DetailView):
-    model = Project
-    template_name = 'ide/project_detail.html'
+@login_required
+def project_detail_redirect(request, pk):
+    """Superseded by IDE sidebar; bounce to the shell."""
+    get_object_or_404(Project, pk=pk, workspace__members=request.user)
+    return redirect('ide_shell')
 
-    def get_queryset(self):
-        return Project.objects.filter(workspace__members=self.request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        templates_qs = self.object.templates.all().order_by('-created_at').prefetch_related('versions')
-        paginator = Paginator(templates_qs, 10)
-        page = paginator.get_page(self.request.GET.get('page'))
-        context['templates'] = page.object_list
-        context['page_obj'] = page
-        membership = Membership.objects.get(user=self.request.user, workspace=self.object.workspace)
-        context['can_manage'] = membership.role in ['admin', 'member']
-        return context
+ProjectDetailView = project_detail_redirect  # symbol kept for urls.py compatibility
 
 def _ollama_models_or_none():
     """Return list of installed model names, or None if Ollama is unreachable/empty."""
