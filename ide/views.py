@@ -89,6 +89,27 @@ def ide_editor(request):
 
 
 @login_required
+def ide_palette_index(request):
+    """JSON list of every template the user can reach, for the command palette."""
+    from django.http import JsonResponse
+    items = []
+    templates = (
+        PromptTemplate.objects
+        .filter(project__workspace__members=request.user)
+        .select_related('project__workspace')
+        .order_by('name')
+    )
+    for t in templates:
+        items.append({
+            'id': t.pk,
+            'name': t.name,
+            'project': t.project.name,
+            'workspace': t.project.workspace.name,
+        })
+    return JsonResponse({'items': items})
+
+
+@login_required
 def ide_run_panel(request):
     """HTMX partial: run panel for a selected version."""
     version_id = _safe_int(request.GET.get('v'))

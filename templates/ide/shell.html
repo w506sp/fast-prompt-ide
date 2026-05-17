@@ -4,6 +4,97 @@
 {% block body_class %}ide-mode{% endblock %}
 
 {% block content %}
+<div id="palette" class="palette" hidden>
+    <div class="palette-box">
+        <input type="text" id="palette-input" placeholder="jump to a template…" autocomplete="off">
+        <ul id="palette-results" class="palette-results"></ul>
+        <p class="meta palette-hint">↑↓ to navigate · ↵ to open · esc to close</p>
+    </div>
+</div>
+<script>
+    (function () {
+        const overlay = document.getElementById('palette');
+        const input = document.getElementById('palette-input');
+        const results = document.getElementById('palette-results');
+        let items = null;
+        let active = 0;
+
+        function fetchItems() {
+            if (items !== null) return Promise.resolve(items);
+            return fetch('{% url "ide_palette_index" %}')
+                .then(r => r.json())
+                .then(j => { items = j.items; return items; });
+        }
+
+        function render(query) {
+            const q = query.trim().toLowerCase();
+            const matches = items.filter(i =>
+                i.name.toLowerCase().includes(q) ||
+                i.project.toLowerCase().includes(q) ||
+                i.workspace.toLowerCase().includes(q)
+            ).slice(0, 20);
+            active = 0;
+            results.innerHTML = matches.map((m, idx) => `
+                <li class="palette-row ${idx === 0 ? 'is-active' : ''}" data-id="${m.id}">
+                    <strong>${escapeHtml(m.name)}</strong>
+                    <span class="meta">${escapeHtml(m.workspace)} / ${escapeHtml(m.project)}</span>
+                </li>
+            `).join('') || '<li class="muted" style="padding:8px;">no matches</li>';
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+        }
+
+        function open() {
+            fetchItems().then(() => {
+                overlay.hidden = false;
+                input.value = '';
+                render('');
+                input.focus();
+            });
+        }
+        function close() { overlay.hidden = true; }
+        function pick(id) {
+            close();
+            const url = `/ide/partials/editor/?t=${id}`;
+            htmx.ajax('GET', url, {target: '#editor', swap: 'innerHTML'});
+            history.pushState({}, '', `/ide/?t=${id}`);
+            htmx.trigger(document.body, 'sidebar:refresh');
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                open();
+                return;
+            }
+            if (overlay.hidden) return;
+            if (e.key === 'Escape') { close(); return; }
+            const rows = results.querySelectorAll('.palette-row');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                active = Math.min(active + 1, rows.length - 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                active = Math.max(active - 1, 0);
+            } else if (e.key === 'Enter' && rows[active]) {
+                e.preventDefault();
+                pick(rows[active].dataset.id);
+                return;
+            }
+            rows.forEach((r, i) => r.classList.toggle('is-active', i === active));
+        });
+        input.addEventListener('input', () => render(input.value));
+        results.addEventListener('click', (e) => {
+            const row = e.target.closest('.palette-row');
+            if (row) pick(row.dataset.id);
+        });
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
+        });
+    })();
+</script>
 <div class="ide-shell">
     <aside class="ide-pane ide-sidebar" id="sidebar"
            hx-get="{% url 'ide_sidebar_partial' %}{% if request.GET.t %}?t={{ request.GET.t }}{% endif %}"
