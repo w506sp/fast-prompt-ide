@@ -97,9 +97,10 @@
                 ).join('');
             }
 
+            // Split the literal {{ so Django's template engine doesn't parse it.
             preview.innerHTML = escapeHtml(raw).replace(
                 /\{\{(\w+)\}\}/g,
-                '<mark style="background:#fff3a0;padding:0 2px;">{{$1}}</mark>'
+                '<mark style="background:#fff3a0;padding:0 2px;">' + '{' + '{$1}' + '}</mark>'
             );
         }
 
