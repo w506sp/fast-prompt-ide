@@ -11,7 +11,10 @@
            hx-swap="innerHTML">
         <div class="ide-empty">loading…</div>
     </aside>
-    <section class="ide-pane ide-editor" id="editor">
+    <section class="ide-pane ide-editor" id="editor"
+             {% if request.GET.t %}hx-get="{% url 'ide_editor_partial' %}?t={{ request.GET.t }}{% if request.GET.v %}&v={{ request.GET.v }}{% endif %}"
+             hx-trigger="load"
+             hx-swap="innerHTML"{% endif %}>
         <div class="ide-empty">select a template from the sidebar to start.</div>
     </section>
     <aside class="ide-pane ide-run" id="run-panel">

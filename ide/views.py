@@ -46,8 +46,33 @@ def ide_sidebar(request):
 
 @login_required
 def ide_editor(request):
-    """HTMX partial: editor pane for a selected template/version. Stub for now."""
-    return render(request, 'ide/_editor.html', {})
+    """HTMX partial: editor pane for a selected template, optionally a specific version."""
+    template_id = _safe_int(request.GET.get('t'))
+    if template_id is None:
+        return render(request, 'ide/_editor.html', {})
+    template = get_object_or_404(
+        PromptTemplate,
+        pk=template_id,
+        project__workspace__members=request.user,
+    )
+    versions = list(template.versions.all())
+    version_id = _safe_int(request.GET.get('v'))
+    selected = next((v for v in versions if v.pk == version_id), None) or (versions[0] if versions else None)
+    membership = Membership.objects.get(
+        user=request.user, workspace=template.project.workspace,
+    )
+    return render(request, 'ide/_editor.html', {
+        'prompt_template': template,
+        'versions': versions,
+        'selected': selected,
+        'can_manage': membership.role in ['admin', 'member'],
+    })
+
+
+@login_required
+def ide_run_panel(request):
+    """HTMX partial: run panel for a selected version. Stub for now."""
+    return render(request, 'ide/_run_panel.html', {})
 
 
 def _safe_int(value):

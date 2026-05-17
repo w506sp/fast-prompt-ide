@@ -1,1 +1,63 @@
-<div class="ide-empty">editor pane placeholder.</div>
+{% if not prompt_template %}
+    <div class="ide-empty">select a template from the sidebar to start.</div>
+{% else %}
+<div class="editor-head">
+    <h2 class="editor-title">{{ prompt_template.name }}</h2>
+    <p class="meta">
+        {{ prompt_template.project.workspace.name }} · {{ prompt_template.project.name }}
+        {% if can_manage %}
+            <span class="sep">·</span>
+            <a href="{% url 'prompt_template_edit' prompt_template.pk %}">rename</a>
+            <span class="sep">·</span>
+            <a href="{% url 'prompt_template_delete' prompt_template.pk %}" class="btn-danger">delete</a>
+        {% endif %}
+    </p>
+    {% if prompt_template.description %}<p class="muted">{{ prompt_template.description }}</p>{% endif %}
+</div>
+
+{% if versions %}
+    <div class="version-strip">
+        {% for v in versions %}
+            <a href="#"
+               class="version-chip {% if v.pk == selected.pk %}is-selected{% endif %}"
+               hx-get="{% url 'ide_editor_partial' %}?t={{ prompt_template.pk }}&v={{ v.pk }}"
+               hx-target="#editor"
+               hx-swap="innerHTML"
+               hx-push-url="/ide/?t={{ prompt_template.pk }}&v={{ v.pk }}"
+               title="{{ v.commit_message|default:'(no message)' }} · {{ v.created_at|date:'Y-m-d H:i' }}">
+                v{{ v.version_number }}
+            </a>
+        {% endfor %}
+        {% if can_manage %}
+            <a href="{% url 'prompt_version_create' prompt_template.pk %}" class="version-chip new">+ new</a>
+        {% endif %}
+    </div>
+
+    <div class="version-meta">
+        <span><code>{{ selected.model_name }}</code></span>
+        {% if selected.commit_message %}<span class="meta">· {{ selected.commit_message }}</span>{% endif %}
+        <span class="meta">· {{ selected.created_at|date:"Y-m-d H:i" }}</span>
+        {% if can_manage %}
+            <span class="sep">·</span>
+            <a href="{% url 'prompt_version_edit' selected.pk %}">edit metadata</a>
+            <span class="sep">·</span>
+            <a href="{% url 'prompt_version_delete' selected.pk %}" class="btn-danger">delete</a>
+        {% endif %}
+    </div>
+
+    <pre class="prompt-block editor-content">{{ selected.content }}</pre>
+{% else %}
+    <div class="ide-empty">
+        no versions yet.
+        {% if can_manage %}
+            <br><a href="{% url 'prompt_version_create' prompt_template.pk %}">create the first one</a>.
+        {% endif %}
+    </div>
+{% endif %}
+
+<div hx-get="{% url 'ide_run_panel_partial' %}{% if selected %}?v={{ selected.pk }}{% endif %}"
+     hx-trigger="load"
+     hx-target="#run-panel"
+     hx-swap="innerHTML"
+     style="display:none;"></div>
+{% endif %}
