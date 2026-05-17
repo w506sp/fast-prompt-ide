@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.core.paginator import Paginator
-from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution
+from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution, Favorite
 from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, PromptVersionMetaForm, RunPromptForm, VariableFormSet
 from . import ollama_client
 from .utils import render_prompt
@@ -86,6 +86,31 @@ def ide_editor(request):
         'diff_against': diff_against,
         'diff_lines': diff_lines,
     })
+
+
+@login_required
+def toggle_favorite(request, template_pk):
+    """POST-only: toggle the current user's favorite for this template."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest("POST required")
+    template = get_object_or_404(
+        PromptTemplate, pk=template_pk, project__workspace__members=request.user,
+    )
+    fav, created = Favorite.objects.get_or_create(user=request.user, template=template)
+    if not created:
+        fav.delete()
+        is_fav = False
+    else:
+        is_fav = True
+    # Return a fresh star button so HTMX can swap it in place.
+    from django.http import HttpResponse
+    star = '★' if is_fav else '☆'
+    return HttpResponse(
+        f'<button type="button" class="star-btn{" is-fav" if is_fav else ""}"'
+        f' hx-post="/ide/templates/{template.pk}/favorite/"'
+        f' hx-swap="outerHTML"'
+        f' title="{"unfavorite" if is_fav else "favorite"}">{star}</button>'
+    )
 
 
 @login_required

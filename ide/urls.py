@@ -7,6 +7,7 @@ urlpatterns = [
     path('ide/partials/editor/', views.ide_editor, name='ide_editor_partial'),
     path('ide/partials/run-panel/', views.ide_run_panel, name='ide_run_panel_partial'),
     path('ide/palette/index.json', views.ide_palette_index, name='ide_palette_index'),
+    path('ide/templates/<int:template_pk>/favorite/', views.toggle_favorite, name='toggle_favorite'),
     path('', views.workspace_list_redirect, name='workspace_list'),
     path('new/', views.WorkspaceCreateView.as_view(), name='workspace_create'),
     path('<int:pk>/', views.WorkspaceDetailView.as_view(), name='workspace_detail'),
