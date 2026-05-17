@@ -9,7 +9,7 @@ User = get_user_model()
 
 def landing(request):
     if request.user.is_authenticated:
-        return redirect('workspace_list')
+        return redirect('ide_shell')
     return render(request, 'accounts/landing.html')
 
 class SignUpView(generic.CreateView):
