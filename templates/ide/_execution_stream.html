@@ -9,8 +9,24 @@
      hx-target="#stream-output">
     <p class="meta">streaming from <code>{{ execution.version.model_name }}</code>…
         <button type="button" data-copy-target="#stream-output" class="copy-btn">copy</button>
+        <button type="button" id="stream-stop" class="copy-btn btn-danger">stop</button>
     </p>
     <pre class="prompt-block" id="stream-output"></pre>
+    <script>
+        // Close the EventSource locally on click. The server keeps running until
+        // Ollama finishes, but the client stops receiving (and the partial output
+        // already shown is preserved). On a finished/aborted stream, the link to
+        // the persisted execution becomes available via the sse:done handler.
+        (function () {
+            const stopBtn = document.getElementById('stream-stop');
+            const wrap = document.getElementById('stream-wrap');
+            stopBtn.addEventListener('click', function () {
+                htmx.trigger(wrap, 'htmx:abort');
+                stopBtn.disabled = true;
+                stopBtn.textContent = 'stopped';
+            });
+        })();
+    </script>
     <div hx-trigger="sse:done"
          hx-get="{% url 'execution_detail' execution.pk %}"
          hx-target="#stream-wrap"
