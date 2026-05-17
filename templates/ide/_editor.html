@@ -19,12 +19,13 @@
     <div class="version-strip">
         {% for v in versions %}
             <a href="#"
-               class="version-chip {% if v.pk == selected.pk %}is-selected{% endif %}"
+               class="version-chip {% if v.pk == selected.pk %}is-selected{% endif %}{% if diff_against and v.pk == diff_against.pk %}is-diff{% endif %}"
+               data-version-pk="{{ v.pk }}"
                hx-get="{% url 'ide_editor_partial' %}?t={{ prompt_template.pk }}&v={{ v.pk }}"
                hx-target="#editor"
                hx-swap="innerHTML"
                hx-push-url="/ide/?t={{ prompt_template.pk }}&v={{ v.pk }}"
-               title="{{ v.commit_message|default:'(no message)' }} · {{ v.created_at|date:'Y-m-d H:i' }}">
+               title="{{ v.commit_message|default:'(no message)' }} · {{ v.created_at|date:'Y-m-d H:i' }} · shift-click to diff">
                 v{{ v.version_number }}
             </a>
         {% endfor %}
@@ -32,6 +33,26 @@
             <a href="{% url 'prompt_version_create' prompt_template.pk %}" class="version-chip new">+ new</a>
         {% endif %}
     </div>
+    <p class="meta" style="margin-top:-6px;">shift-click another version chip to diff against the selected one.</p>
+    <script>
+        (function () {
+            const tmplId = {{ prompt_template.pk }};
+            const selectedId = {% if selected %}{{ selected.pk }}{% else %}null{% endif %};
+            document.querySelectorAll('.version-chip[data-version-pk]').forEach((el) => {
+                el.addEventListener('click', function (e) {
+                    if (!e.shiftKey) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const otherId = parseInt(el.dataset.versionPk, 10);
+                    if (otherId === selectedId || !selectedId) return;
+                    const url = `/ide/partials/editor/?t=${tmplId}&v=${selectedId}&diff=${otherId}`;
+                    const pushUrl = `/ide/?t=${tmplId}&v=${selectedId}&diff=${otherId}`;
+                    htmx.ajax('GET', url, {target: '#editor', swap: 'innerHTML'});
+                    history.pushState({}, '', pushUrl);
+                });
+            });
+        })();
+    </script>
 
     <div class="version-meta">
         <span><code>{{ selected.model_name }}</code></span>
@@ -45,7 +66,23 @@
         {% endif %}
     </div>
 
-    <pre class="prompt-block editor-content">{{ selected.content }}</pre>
+    {% if diff_lines is not None %}
+        <div class="diff-banner">
+            comparing <strong>v{{ diff_against.version_number }}</strong> ↔ <strong>v{{ selected.version_number }}</strong>
+            — <a href="#"
+                 hx-get="{% url 'ide_editor_partial' %}?t={{ prompt_template.pk }}&v={{ selected.pk }}"
+                 hx-target="#editor"
+                 hx-push-url="/ide/?t={{ prompt_template.pk }}&v={{ selected.pk }}">exit diff</a>
+        </div>
+        {% if diff_lines %}
+        <pre class="prompt-block editor-content">{% for line in diff_lines %}{% if line|slice:":1" == "+" and line|slice:":3" != "+++" %}<span style="color:#1a7f37;">{{ line }}</span>{% elif line|slice:":1" == "-" and line|slice:":3" != "---" %}<span style="color:#aa0000;">{{ line }}</span>{% else %}{{ line }}{% endif %}
+{% endfor %}</pre>
+        {% else %}
+        <p class="muted">these two versions have identical content.</p>
+        {% endif %}
+    {% else %}
+        <pre class="prompt-block editor-content">{{ selected.content }}</pre>
+    {% endif %}
 {% else %}
     <div class="ide-empty">
         no versions yet.

@@ -46,7 +46,8 @@ def ide_sidebar(request):
 
 @login_required
 def ide_editor(request):
-    """HTMX partial: editor pane for a selected template, optionally a specific version."""
+    """HTMX partial: editor pane for a selected template, optionally a specific version.
+    If ?diff=<other_version_pk> is provided, render a unified diff against `selected`."""
     template_id = _safe_int(request.GET.get('t'))
     if template_id is None:
         return render(request, 'ide/_editor.html', {})
@@ -61,11 +62,29 @@ def ide_editor(request):
     membership = Membership.objects.get(
         user=request.user, workspace=template.project.workspace,
     )
+
+    diff_lines = None
+    diff_against = None
+    diff_id = _safe_int(request.GET.get('diff'))
+    if diff_id and selected:
+        diff_against = next((v for v in versions if v.pk == diff_id and v.pk != selected.pk), None)
+        if diff_against:
+            old, new = sorted([diff_against, selected], key=lambda v: v.version_number)
+            diff_lines = list(difflib.unified_diff(
+                old.content.splitlines(),
+                new.content.splitlines(),
+                fromfile=f"v{old.version_number}",
+                tofile=f"v{new.version_number}",
+                lineterm='',
+            ))
+
     return render(request, 'ide/_editor.html', {
         'prompt_template': template,
         'versions': versions,
         'selected': selected,
         'can_manage': membership.role in ['admin', 'member'],
+        'diff_against': diff_against,
+        'diff_lines': diff_lines,
     })
 
 
