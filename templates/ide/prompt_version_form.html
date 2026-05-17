@@ -38,12 +38,43 @@
 <p class="meta">detected variables: <span id="var-chips" class="muted">(none yet)</span></p>
 <pre class="prompt-block" id="content-preview" style="min-height:60px;"></pre>
 
+<p class="meta" id="draft-status"></p>
+
 <script>
     (function () {
         const textarea = document.getElementById('id_content');
         const chips = document.getElementById('var-chips');
         const preview = document.getElementById('content-preview');
+        const form = document.getElementById('version-form');
+        const status = document.getElementById('draft-status');
         if (!textarea) return;
+
+        // Per-template draft key so two tabs editing different templates don't collide.
+        const draftKey = 'fpi-draft-version-{{ prompt_template.pk }}';
+
+        // Restore on load if textarea is empty (avoid clobbering a server-prefilled value).
+        if (!textarea.value) {
+            const saved = localStorage.getItem(draftKey);
+            if (saved) {
+                textarea.value = saved;
+                status.textContent = 'restored unsaved draft (typed locally).';
+            }
+        }
+
+        let saveTimer = null;
+        function saveDraft() {
+            localStorage.setItem(draftKey, textarea.value);
+            status.textContent = 'draft saved locally · ' + new Date().toLocaleTimeString();
+        }
+        textarea.addEventListener('input', function () {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(saveDraft, 600);
+        });
+
+        // Clear the draft on successful submit so the next "new version" page is empty.
+        form.addEventListener('submit', function () {
+            localStorage.removeItem(draftKey);
+        });
 
         const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => (
             {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]
