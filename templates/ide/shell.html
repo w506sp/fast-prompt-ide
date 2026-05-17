@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}ide — fast-prompt-ide{% endblock %}
+{% block body_class %}ide-mode{% endblock %}
+
+{% block content %}
+<div class="ide-shell">
+    <aside class="ide-pane ide-sidebar" id="sidebar">
+        <div class="ide-empty">loading…</div>
+    </aside>
+    <section class="ide-pane ide-editor" id="editor">
+        <div class="ide-empty">select a template from the sidebar to start.</div>
+    </section>
+    <aside class="ide-pane ide-run" id="run-panel">
+        <div class="ide-empty">no template selected.</div>
+    </aside>
+</div>
+{% endblock %}

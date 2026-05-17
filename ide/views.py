@@ -15,6 +15,12 @@ from .utils import render_prompt
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 
+@login_required
+def ide_shell(request):
+    """Single-page IDE shell. Sidebar and panes are populated via HTMX partials."""
+    return render(request, 'ide/shell.html')
+
+
 class WorkspaceListView(LoginRequiredMixin, ListView):
     model = Workspace
     template_name = 'ide/workspace_list.html'
