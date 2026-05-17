@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.core.paginator import Paginator
+from django.db.models import Count
 from .models import Workspace, Project, Membership, PromptTemplate, PromptVersion, Variable, Execution, Favorite
 from .forms import WorkspaceForm, ProjectForm, AddMemberForm, PromptTemplateForm, PromptVersionForm, PromptVersionMetaForm, RunPromptForm, VariableFormSet
 from . import ollama_client
@@ -54,7 +55,25 @@ def ide_editor(request):
     If ?diff=<other_version_pk> is provided, render a unified diff against `selected`."""
     template_id = _safe_int(request.GET.get('t'))
     if template_id is None:
-        return render(request, 'ide/_editor.html', {})
+        # Empty state: surface popular templates + the user's favorites.
+        accessible = PromptTemplate.objects.filter(
+            project__workspace__members=request.user,
+        ).select_related('project__workspace')
+        popular = list(
+            accessible
+            .annotate(run_count=Count('versions__executions'))
+            .filter(run_count__gt=0)
+            .order_by('-run_count', 'name')[:5]
+        )
+        favorites = list(
+            accessible
+            .filter(favorited_by__user=request.user)
+            .order_by('name')
+        )
+        return render(request, 'ide/_editor.html', {
+            'popular': popular,
+            'favorites': favorites,
+        })
     template = get_object_or_404(
         PromptTemplate,
         pk=template_id,

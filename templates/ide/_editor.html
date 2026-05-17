@@ -1,5 +1,48 @@
 {% if not prompt_template %}
-    <div class="ide-empty">select a template from the sidebar to start.</div>
+    <div class="dash-empty">
+        <h2>welcome back</h2>
+        <p class="muted">pick a template from the sidebar, hit <kbd>Ctrl</kbd>+<kbd>K</kbd>, or jump in below.</p>
+
+        <h3>★ your favorites</h3>
+        {% if favorites %}
+            <ul class="cards dash-list">
+                {% for t in favorites %}
+                    <li>
+                        <a href="#"
+                           hx-get="{% url 'ide_editor_partial' %}?t={{ t.pk }}"
+                           hx-target="#editor"
+                           hx-swap="innerHTML"
+                           hx-push-url="/ide/?t={{ t.pk }}">
+                            <strong>{{ t.name }}</strong>
+                        </a>
+                        <span class="meta">— {{ t.project.workspace.name }} / {{ t.project.name }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">none yet — click ☆ next to a template in the sidebar to add one.</p>
+        {% endif %}
+
+        <h3>popular prompts</h3>
+        {% if popular %}
+            <ul class="cards dash-list">
+                {% for t in popular %}
+                    <li>
+                        <a href="#"
+                           hx-get="{% url 'ide_editor_partial' %}?t={{ t.pk }}"
+                           hx-target="#editor"
+                           hx-swap="innerHTML"
+                           hx-push-url="/ide/?t={{ t.pk }}">
+                            <strong>{{ t.name }}</strong>
+                        </a>
+                        <span class="meta">— {{ t.project.workspace.name }} / {{ t.project.name }} · {{ t.run_count }} run{{ t.run_count|pluralize }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">no runs yet — popular prompts will appear here once people start running them.</p>
+        {% endif %}
+    </div>
 {% else %}
 <div class="editor-head">
     <h2 class="editor-title">{{ prompt_template.name }}</h2>
