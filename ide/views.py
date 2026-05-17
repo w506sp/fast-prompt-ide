@@ -325,25 +325,14 @@ class PromptTemplateUpdateView(LoginRequiredMixin, UpdateView):
         return reverse('prompt_template_detail', kwargs={'pk': self.object.pk})
 
 
-class PromptTemplateDetailView(LoginRequiredMixin, DetailView):
-    model = PromptTemplate
-    template_name = 'ide/prompt_template_detail.html'
-    context_object_name = 'prompt_template'
+@login_required
+def prompt_template_detail_redirect(request, pk):
+    """Superseded by IDE shell — sidebar selects templates; deep-link with ?t=."""
+    get_object_or_404(PromptTemplate, pk=pk, project__workspace__members=request.user)
+    return redirect(f"{reverse('ide_shell')}?t={pk}")
 
-    def get_queryset(self):
-        return PromptTemplate.objects.filter(project__workspace__members=self.request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        versions_qs = self.object.versions.all()
-        paginator = Paginator(versions_qs, 10)
-        page = paginator.get_page(self.request.GET.get('page'))
-        context['versions'] = page.object_list
-        context['page_obj'] = page
-        context['latest_version'] = versions_qs.first()
-        membership = Membership.objects.get(user=self.request.user, workspace=self.object.project.workspace)
-        context['can_manage'] = membership.role in ['admin', 'member']
-        return context
+PromptTemplateDetailView = prompt_template_detail_redirect
 
 @login_required
 def create_prompt_version(request, template_pk):
@@ -476,42 +465,16 @@ def run_prompt_version(request, version_pk):
 
 @login_required
 def compare_versions(request, template_pk):
+    """Superseded by inline diff in editor (shift-click chip). Bounce to shell."""
     template = get_object_or_404(
-        PromptTemplate,
-        pk=template_pk,
-        project__workspace__members=request.user,
+        PromptTemplate, pk=template_pk, project__workspace__members=request.user,
     )
-    versions = list(template.versions.all())
-    if len(versions) < 2:
-        messages.info(request, "Need at least two versions to compare.")
-        return redirect('prompt_template_detail', pk=template.pk)
-
-    def _pick(param, default):
-        try:
-            pk = int(request.GET.get(param, default))
-        except (TypeError, ValueError):
-            return default
-        return pk if any(v.pk == pk for v in versions) else default
-
-    left_pk = _pick('left', versions[1].pk)  # older
-    right_pk = _pick('right', versions[0].pk)  # newer
-    left = next(v for v in versions if v.pk == left_pk)
-    right = next(v for v in versions if v.pk == right_pk)
-
-    diff_lines = list(difflib.unified_diff(
-        left.content.splitlines(),
-        right.content.splitlines(),
-        fromfile=f"v{left.version_number}",
-        tofile=f"v{right.version_number}",
-        lineterm='',
-    ))
-    return render(request, 'ide/version_compare.html', {
-        'prompt_template': template,
-        'versions': versions,
-        'left': left,
-        'right': right,
-        'diff_lines': diff_lines,
-    })
+    target = f"{reverse('ide_shell')}?t={template.pk}"
+    left = _safe_int(request.GET.get('left'))
+    right = _safe_int(request.GET.get('right'))
+    if left and right and left != right:
+        target += f"&v={right}&diff={left}"
+    return redirect(target)
 
 
 @login_required
