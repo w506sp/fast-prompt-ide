@@ -21,6 +21,42 @@ def ide_shell(request):
     return render(request, 'ide/shell.html')
 
 
+@login_required
+def ide_sidebar(request):
+    """HTMX partial: workspace > project > template tree, plus recent runs."""
+    workspaces = (
+        Workspace.objects
+        .filter(members=request.user)
+        .prefetch_related('projects__templates')
+        .order_by('name')
+    )
+    recent_runs = (
+        Execution.objects
+        .filter(version__template__project__workspace__members=request.user)
+        .select_related('version__template')
+        .order_by('-created_at')[:5]
+    )
+    selected_template_id = _safe_int(request.GET.get('t'))
+    return render(request, 'ide/_sidebar.html', {
+        'workspaces': workspaces,
+        'recent_runs': recent_runs,
+        'selected_template_id': selected_template_id,
+    })
+
+
+@login_required
+def ide_editor(request):
+    """HTMX partial: editor pane for a selected template/version. Stub for now."""
+    return render(request, 'ide/_editor.html', {})
+
+
+def _safe_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 class WorkspaceListView(LoginRequiredMixin, ListView):
     model = Workspace
     template_name = 'ide/workspace_list.html'

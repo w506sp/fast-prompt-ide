@@ -3,6 +3,8 @@ from . import views
 
 urlpatterns = [
     path('ide/', views.ide_shell, name='ide_shell'),
+    path('ide/partials/sidebar/', views.ide_sidebar, name='ide_sidebar_partial'),
+    path('ide/partials/editor/', views.ide_editor, name='ide_editor_partial'),
     path('', views.WorkspaceListView.as_view(), name='workspace_list'),
     path('new/', views.WorkspaceCreateView.as_view(), name='workspace_create'),
     path('<int:pk>/', views.WorkspaceDetailView.as_view(), name='workspace_detail'),

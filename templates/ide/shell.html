@@ -5,7 +5,10 @@
 
 {% block content %}
 <div class="ide-shell">
-    <aside class="ide-pane ide-sidebar" id="sidebar">
+    <aside class="ide-pane ide-sidebar" id="sidebar"
+           hx-get="{% url 'ide_sidebar_partial' %}{% if request.GET.t %}?t={{ request.GET.t }}{% endif %}"
+           hx-trigger="load, sidebar:refresh from:body"
+           hx-swap="innerHTML">
         <div class="ide-empty">loading…</div>
     </aside>
     <section class="ide-pane ide-editor" id="editor">

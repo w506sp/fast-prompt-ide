@@ -1,0 +1,60 @@
+{# Sidebar partial: workspace > project > template tree, recent runs at bottom. #}
+<div class="sidebar-section">
+    <div class="sidebar-head">
+        workspaces
+        <a href="{% url 'workspace_create' %}" class="sidebar-action" title="new workspace">+</a>
+    </div>
+    {% if workspaces %}
+        {% for workspace in workspaces %}
+            <details class="ws-node" open>
+                <summary>
+                    <strong>{{ workspace.name }}</strong>
+                </summary>
+                {% for project in workspace.projects.all %}
+                    <details class="proj-node" open>
+                        <summary><span class="muted">▸</span> {{ project.name }}</summary>
+                        <ul class="tmpl-list">
+                            {% for tmpl in project.templates.all %}
+                                <li>
+                                    <a href="#"
+                                       class="tmpl-link {% if selected_template_id == tmpl.pk %}is-selected{% endif %}"
+                                       hx-get="{% url 'ide_editor_partial' %}?t={{ tmpl.pk }}"
+                                       hx-target="#editor"
+                                       hx-swap="innerHTML"
+                                       hx-push-url="/ide/?t={{ tmpl.pk }}"
+                                       data-tmpl-id="{{ tmpl.pk }}">
+                                        {{ tmpl.name }}
+                                    </a>
+                                </li>
+                            {% empty %}
+                                <li class="muted">no templates</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                {% empty %}
+                    <p class="muted sidebar-empty">no projects</p>
+                {% endfor %}
+            </details>
+        {% endfor %}
+    {% else %}
+        <p class="muted sidebar-empty">no workspaces yet. <a href="{% url 'workspace_create' %}">create one</a>.</p>
+    {% endif %}
+</div>
+
+<div class="sidebar-section">
+    <div class="sidebar-head">recent runs</div>
+    {% if recent_runs %}
+        <ul class="recent-list">
+            {% for ex in recent_runs %}
+                <li>
+                    <a href="{% url 'execution_detail' ex.pk %}" title="{{ ex.version.template.name }} v{{ ex.version.version_number }}">
+                        #{{ ex.pk }} {{ ex.version.template.name|truncatechars:18 }}
+                    </a>
+                    <span class="meta">· {{ ex.status }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="muted sidebar-empty">no runs yet.</p>
+    {% endif %}
+</div>
