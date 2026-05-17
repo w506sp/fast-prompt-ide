@@ -25,6 +25,10 @@
                 stopBtn.disabled = true;
                 stopBtn.textContent = 'stopped';
             });
+            // Refresh the sidebar's "recent runs" when this stream finishes or errors.
+            ['sse:done', 'sse:error'].forEach((evt) => {
+                wrap.addEventListener(evt, () => htmx.trigger(document.body, 'sidebar:refresh'));
+            });
         })();
     </script>
     <div hx-trigger="sse:done"
