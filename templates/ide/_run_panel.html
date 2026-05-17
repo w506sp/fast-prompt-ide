@@ -1,1 +1,66 @@
-<div class="ide-empty">run panel placeholder.</div>
+{% if not version %}
+    <div class="ide-empty">no version selected.</div>
+{% else %}
+<div class="run-section">
+    <h3>variables</h3>
+    <form id="run-form"
+          method="post"
+          hx-post="{% url 'prompt_version_run_stream' version.pk %}"
+          hx-target="#run-output-area"
+          hx-swap="innerHTML">
+        {% csrf_token %}
+        {% if form.fields %}
+            {% for field in form %}
+                <p>
+                    {{ field.label_tag }}
+                    {{ field }}
+                </p>
+            {% endfor %}
+        {% else %}
+            <p class="muted">no variables — submit to run as-is.</p>
+        {% endif %}
+        <p>
+            <button type="submit"><strong>run &rarr;</strong></button>
+            <span class="meta">(<kbd>Ctrl</kbd>+<kbd>↵</kbd>)</span>
+        </p>
+    </form>
+    <script>
+        (function () {
+            const form = document.getElementById('run-form');
+            if (!form) return;
+            form.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    htmx.trigger(form, 'submit');
+                }
+            });
+        })();
+    </script>
+</div>
+
+<div class="run-section">
+    <h3>output</h3>
+    <div id="run-output-area">
+        <p class="muted">submit to start a streamed run.</p>
+    </div>
+</div>
+
+<div class="run-section">
+    <details>
+        <summary><h3 style="display:inline;">history ({{ recent|length }} recent)</h3></summary>
+        {% if recent %}
+            <ul class="recent-list">
+                {% for ex in recent %}
+                    <li>
+                        <a href="{% url 'execution_detail' ex.pk %}">#{{ ex.pk }}</a>
+                        <span class="meta">· {{ ex.status }} · {{ ex.created_at|date:"H:i" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="meta"><a href="{% url 'execution_list' version.pk %}">full history &rarr;</a></p>
+        {% else %}
+            <p class="muted">no runs yet.</p>
+        {% endif %}
+    </details>
+</div>
+{% endif %}

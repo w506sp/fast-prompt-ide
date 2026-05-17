@@ -71,8 +71,23 @@ def ide_editor(request):
 
 @login_required
 def ide_run_panel(request):
-    """HTMX partial: run panel for a selected version. Stub for now."""
-    return render(request, 'ide/_run_panel.html', {})
+    """HTMX partial: run panel for a selected version."""
+    version_id = _safe_int(request.GET.get('v'))
+    if version_id is None:
+        return render(request, 'ide/_run_panel.html', {})
+    version = get_object_or_404(
+        PromptVersion,
+        pk=version_id,
+        template__project__workspace__members=request.user,
+    )
+    variables = list(version.variables.all())
+    form = RunPromptForm(variables=variables)
+    recent = version.executions.order_by('-created_at')[:5]
+    return render(request, 'ide/_run_panel.html', {
+        'version': version,
+        'form': form,
+        'recent': recent,
+    })
 
 
 def _safe_int(value):
