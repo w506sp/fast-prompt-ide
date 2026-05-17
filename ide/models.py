@@ -81,6 +81,18 @@ class Variable(models.Model):
     def __str__(self):
         return self.name
 
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    template = models.ForeignKey('PromptTemplate', on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'template')
+
+    def __str__(self):
+        return f"{self.user.username} ★ {self.template.name}"
+
+
 class PromptTemplate(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='templates')
     name = models.CharField(max_length=255)
