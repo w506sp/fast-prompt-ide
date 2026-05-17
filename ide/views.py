@@ -37,10 +37,14 @@ def ide_sidebar(request):
         .order_by('-created_at')[:5]
     )
     selected_template_id = _safe_int(request.GET.get('t'))
+    favorite_ids = set(
+        Favorite.objects.filter(user=request.user).values_list('template_id', flat=True)
+    )
     return render(request, 'ide/_sidebar.html', {
         'workspaces': workspaces,
         'recent_runs': recent_runs,
         'selected_template_id': selected_template_id,
+        'favorite_ids': favorite_ids,
     })
 
 

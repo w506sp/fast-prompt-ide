@@ -24,7 +24,7 @@
                         </summary>
                         <ul class="tmpl-list">
                             {% for tmpl in project.templates.all %}
-                                <li>
+                                <li class="tmpl-row">
                                     <a href="#"
                                        class="tmpl-link {% if selected_template_id == tmpl.pk %}is-selected{% endif %}"
                                        hx-get="{% url 'ide_editor_partial' %}?t={{ tmpl.pk }}"
@@ -34,6 +34,19 @@
                                        data-tmpl-id="{{ tmpl.pk }}">
                                         {{ tmpl.name }}
                                     </a>
+                                    {% if tmpl.pk in favorite_ids %}
+                                        <button type="button"
+                                                class="star-btn is-fav"
+                                                hx-post="{% url 'toggle_favorite' tmpl.pk %}"
+                                                hx-swap="outerHTML"
+                                                title="unfavorite">★</button>
+                                    {% else %}
+                                        <button type="button"
+                                                class="star-btn"
+                                                hx-post="{% url 'toggle_favorite' tmpl.pk %}"
+                                                hx-swap="outerHTML"
+                                                title="favorite">☆</button>
+                                    {% endif %}
                                 </li>
                             {% empty %}
                                 <li class="muted">
